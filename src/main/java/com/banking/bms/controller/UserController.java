@@ -1,0 +1,29 @@
+package com.banking.bms.controller;
+
+import com.banking.bms.model.UserModel;
+import com.banking.bms.model.entities.User;
+import com.banking.bms.services.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/user")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+
+    @PostMapping
+    public ResponseEntity<UserModel> addUser(@RequestBody UserModel userModel) {
+        return ResponseEntity.ok(userService.insertUser(userModel));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserModel>> getAllUser() {
+        return ResponseEntity.ok(userService.getAllUser());
+    }
+}

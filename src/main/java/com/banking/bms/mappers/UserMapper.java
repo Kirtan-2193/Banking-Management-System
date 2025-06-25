@@ -1,0 +1,25 @@
+package com.banking.bms.mappers;
+
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+
+import com.banking.bms.model.UserModel;
+import com.banking.bms.model.entities.User;
+import org.mapstruct.*;
+
+import java.util.List;
+
+@Mapper(
+        componentModel = SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        builder = @Builder(disableBuilder = true),
+        nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL
+)
+public interface UserMapper {
+
+    @Mapping(target = "roles", ignore = true)
+    User userModelToUser(UserModel userModel);
+
+    UserModel userToUserModel(User user);
+
+    List<UserModel> userListToUserMOdelList(List<User> users);
+}
