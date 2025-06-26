@@ -1,10 +1,8 @@
 package com.banking.bms.controller;
 
 import com.banking.bms.model.UserModel;
-import com.banking.bms.model.entities.User;
 import com.banking.bms.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +21,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserModel>> getAllUser() {
-        return ResponseEntity.ok(userService.getAllUser());
+    public ResponseEntity<List<UserModel>> getAllUser(@RequestParam(required = false) String search) {
+        return ResponseEntity.ok(userService.getAllUser(search));
     }
 }

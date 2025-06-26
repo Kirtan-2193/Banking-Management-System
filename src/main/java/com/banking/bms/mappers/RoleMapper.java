@@ -2,14 +2,22 @@ package com.banking.bms.mappers;
 
 import com.banking.bms.model.RoleModel;
 import com.banking.bms.model.entities.Role;
-import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
+
+@Mapper(
+        componentModel = SPRING,
+        unmappedTargetPolicy = ReportingPolicy.IGNORE,
+        builder = @Builder(disableBuilder = true),
+        nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL
+)
 public interface RoleMapper {
 
-    RoleMapper INSTANCE = Mappers.getMapper(RoleMapper.class);
 
+    List<RoleModel> roleListToRoleModelList(List<Role> roles);
 
-    RoleModel rolesToRolesModel(Role role);
+    RoleModel roleToRoleModel(Role role);
 }

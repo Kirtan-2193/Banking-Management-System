@@ -68,16 +68,23 @@ public class UserService {
         UserModel userModelToReturn = userMapper.userToUserModel(user);
         List<UserRole> byUserUserId = userRoleRepository.findByUserUserId(user.getUserId());
         List<RoleModel> roleModels = new ArrayList<>();
-        byUserUserId.forEach(ur -> roleModels.add(roleMapper.rolesToRolesModel(ur.getRole())));
+        byUserUserId.forEach(ur -> roleModels.add(roleMapper.roleToRoleModel(ur.getRole())));
         userModelToReturn.setRoles(roleModels);
 
         return userModelToReturn;
-
-
     }
 
-    public List<UserModel> getAllUser() {
-        List<User> user = userRepository.findAll();
-        return userMapper.userListToUserMOdelList(user);
+    public List<UserModel> getAllUser(String search) {
+
+        List<User> userList = userRepository.findAllUserBy(search);
+        List<UserModel> userModelList = userMapper.userListToUserModelList(userList);
+        for (UserModel userModel : userModelList) {
+            List<UserRole> byUserUserId = userRoleRepository.findByUserUserId(userModel.getUserId());
+            List<RoleModel> roleModelList = new ArrayList<>();
+            byUserUserId.forEach(ur -> roleModelList.add(roleMapper.roleToRoleModel(ur.getRole())));
+            userModel.setRoles(roleModelList);
+        }
+
+        return userModelList;
     }
 }

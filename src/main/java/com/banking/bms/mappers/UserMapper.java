@@ -16,10 +16,10 @@ import java.util.List;
 )
 public interface UserMapper {
 
-    @Mapping(target = "roles", ignore = true)
     User userModelToUser(UserModel userModel);
 
     UserModel userToUserModel(User user);
 
-    List<UserModel> userListToUserMOdelList(List<User> users);
+    List<UserModel> userListToUserModelList(List<User> users);
+
 }
