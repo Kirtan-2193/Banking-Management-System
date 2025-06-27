@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
@@ -24,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, String> {
             + "OR (:search IS NULL OR LOWER(r.role_name) LIKE LOWER(CONCAT('%', :search, '%'))) ",
         nativeQuery = true)
     List<User> findAllUserBy(@Param("search") String search);
+
+    Optional<User> findByUserId(String userId);
 }
