@@ -24,4 +24,9 @@ public class UserController {
     public ResponseEntity<List<UserModel>> getAllUser(@RequestParam(required = false) String search) {
         return ResponseEntity.ok(userService.getAllUser(search));
     }
+
+    @PutMapping
+    public ResponseEntity<UserModel> editUser(@RequestBody UserModel userModel, @RequestParam String userId) {
+        return ResponseEntity.ok(userService.updateUser(userModel, userId));
+    }
 }

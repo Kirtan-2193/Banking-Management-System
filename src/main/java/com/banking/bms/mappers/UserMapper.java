@@ -22,4 +22,6 @@ public interface UserMapper {
 
     List<UserModel> userListToUserModelList(List<User> users);
 
+    void updateUserFromUserModel(UserModel userModel, @MappingTarget User user);
+
 }
