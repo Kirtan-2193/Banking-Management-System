@@ -35,7 +35,7 @@ public class UserService {
     private final RoleMapper roleMapper;
 
 
-
+    @Transactional
     public UserModel insertUser(UserModel userModel) {
 
         if (userRepository.existsByEmail(userModel.getEmail())) {
@@ -83,7 +83,7 @@ public class UserService {
         List<User> userList = userRepository.findAllUserBy(search);
         List<UserModel> userModelList = userMapper.userListToUserModelList(userList);
         for (UserModel userModel : userModelList) {
-            List<UserRole> byUserUserId = userRoleRepository.findByUserUserId(userModel.getUserId());
+            List<UserRole> byUserUserId = userRoleRepository.findByUserUserIdAndStatus(userModel.getUserId(), Status.ACTIVE);
             List<RoleModel> roleModelList = new ArrayList<>();
             byUserUserId.forEach(ur -> roleModelList.add(roleMapper.roleToRoleModel(ur.getRole())));
             userModel.setRoles(roleModelList);
