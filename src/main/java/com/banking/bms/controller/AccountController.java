@@ -1,11 +1,13 @@
 package com.banking.bms.controller;
 
+import com.banking.bms.model.AccountModel;
 import com.banking.bms.model.UserAccountModel;
 import com.banking.bms.services.AccountService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/account")
@@ -15,8 +17,12 @@ public class AccountController {
     private final AccountService accountService;
 
     @PostMapping
-    public String addAccount(@RequestBody UserAccountModel userAccountModel, @RequestParam String userId) {
-        return null;
+    public ResponseEntity<UserAccountModel> addAccount(@RequestBody List<AccountModel> accountModel, @RequestParam String userId) {
+        return ResponseEntity.ok(accountService.insertAccount(accountModel, userId));
     }
 
+    @GetMapping
+    public ResponseEntity<UserAccountModel> getAccountByUserId(@RequestParam String userId) {
+        return ResponseEntity.ok(accountService.getAccountByUser(userId));
+    }
 }

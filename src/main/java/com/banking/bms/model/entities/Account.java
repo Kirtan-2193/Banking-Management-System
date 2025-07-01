@@ -15,7 +15,7 @@ public class Account {
 
     @Id
     @GenericGenerator(name = "uuid", strategy = "uuid2")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid")
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "uuid")
     @Column(name = "account_id")
     private String accountId;
 
@@ -39,9 +39,13 @@ public class Account {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "Account", cascade = CascadeType.ALL)
+    private Passbook passbook;
+
+
+
     @PrePersist
     protected void onCreate() {
-        this.accountId = UUID.randomUUID().toString();
         this.accountNumber = generateAccountNumber();
     }
 
