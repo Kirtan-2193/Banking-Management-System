@@ -14,8 +14,6 @@ public class AccountModel {
 
     private String accountType;
 
-    private String status;
-
     private String accountBranch;
 
     private String accountBalance;
