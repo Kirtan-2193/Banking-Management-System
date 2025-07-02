@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class TransferInfoModel {
 
-    private String accountNumber;
+    private Long accountNumber;
     private String firstName;
     private String email;
 }
