@@ -4,10 +4,7 @@ import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.AccountMapper;
 import com.banking.bms.mappers.UserMapper;
-import com.banking.bms.model.AccountModel;
-import com.banking.bms.model.TransactionModel;
-import com.banking.bms.model.TransferInfoModel;
-import com.banking.bms.model.UserAccountModel;
+import com.banking.bms.model.*;
 import com.banking.bms.model.entities.Account;
 import com.banking.bms.model.entities.Passbook;
 import com.banking.bms.model.entities.User;
@@ -118,6 +115,42 @@ public class AccountService {
         return transactionModel;
     }
 
+
+
+    @Transactional
+    public TransferMessageModel withdrawMoney(Long accountNumber, double withdrawAmount) {
+
+        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
+                new DataNotFoundException("Account not found with account number: " + accountNumber));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+
+        debit(account, user, withdrawAmount);
+
+        TransferMessageModel transferMessageModel = new TransferMessageModel();
+        transferMessageModel.setAmount(withdrawAmount);
+        transferMessageModel.setAccountNumber(accountNumber);
+        transferMessageModel.setMessage("₹"+withdrawAmount+" Withdrawn successfully. Your new balance is ₹"+account.getAccountBalance());
+
+        return transferMessageModel;
+    }
+
+
+
+    @Transactional
+    public TransferMessageModel depositMoney(Long accountNumber, double depositAmount) {
+        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
+                new DataNotFoundException("Account not found with account number: " + accountNumber));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+
+        credit(account, user, depositAmount);
+
+        TransferMessageModel transferMessageModel = new TransferMessageModel();
+        transferMessageModel.setAmount(depositAmount);
+        transferMessageModel.setAccountNumber(accountNumber);
+        transferMessageModel.setMessage("₹"+depositAmount+" Deposited successfully. Your new balance is ₹"+account.getAccountBalance());
+
+        return transferMessageModel;
+    }
 
 
 
