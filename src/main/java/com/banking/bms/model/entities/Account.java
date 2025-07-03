@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -39,8 +40,8 @@ public class Account {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "Account", cascade = CascadeType.ALL)
-    private Passbook passbook;
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
+    private List<Passbook> passbook;
 
 
 

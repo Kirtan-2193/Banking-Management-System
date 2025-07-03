@@ -1,14 +1,18 @@
 package com.banking.bms.services;
 
 import com.banking.bms.exceptions.DataNotFoundException;
+import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.AccountMapper;
 import com.banking.bms.mappers.UserMapper;
 import com.banking.bms.model.AccountModel;
 import com.banking.bms.model.TransactionModel;
+import com.banking.bms.model.TransferInfoModel;
 import com.banking.bms.model.UserAccountModel;
 import com.banking.bms.model.entities.Account;
+import com.banking.bms.model.entities.Passbook;
 import com.banking.bms.model.entities.User;
 import com.banking.bms.repository.AccountRepository;
+import com.banking.bms.repository.PassbookRepository;
 import com.banking.bms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,8 @@ public class AccountService {
     private final UserRepository userRepository;
 
     private final UserMapper userMapper;
+
+    private final PassbookRepository passbookRepository;
 
 
 
@@ -65,12 +71,131 @@ public class AccountService {
     }
 
 
-    /*public TransactionModel transferMoney(String fromAccountNumber, String toAccountNumber, double transferAmount) {
+    /**
+     * Transfers money from one account to another.
+     *
+     * This method performs the following steps:
+     * - Validates that both source (fromAccountNumber) and destination (toAccountNumber) accounts exist.
+     * - Retrieves associated users for both accounts using their email addresses.
+     * - Constructs transfer information models for both sender and receiver.
+     * - Debits the transfer amount from the source account.
+     * - Credits the same amount to the destination account.
+     * - Returns a TransactionModel that summarizes the transaction details.
+     *
+     * @param fromAccountNumber the account number from which money will be debited
+     * @param toAccountNumber the account number to which money will be credited
+     * @param transferAmount the amount of money to be transferred
+     */
+    @Transactional
+    public TransactionModel transferMoney(Long fromAccountNumber, Long toAccountNumber, double transferAmount) {
 
         Account fromAccount = accountRepository.findByAccountNumber(fromAccountNumber).orElseThrow(() ->
                 new DataNotFoundException("Account not found with account number: " + fromAccountNumber));
         User fromUser = userRepository.findByEmail(fromAccount.getUser().getEmail());
 
+        Account toAccount = accountRepository.findByAccountNumber(toAccountNumber).orElseThrow(() ->
+                new DataNotFoundException("Account not found with account number: " + toAccountNumber));
+        User toUser = userRepository.findByEmail(toAccount.getUser().getEmail());
 
-    }*/
+        TransferInfoModel fromTransferInfoModel = new TransferInfoModel();
+        fromTransferInfoModel.setAccountNumber(fromAccount.getAccountNumber());
+        fromTransferInfoModel.setFirstName(fromUser.getFirstName());
+        fromTransferInfoModel.setEmail(fromUser.getEmail());
+
+        TransferInfoModel toTransferInfoModel = new TransferInfoModel();
+        toTransferInfoModel.setAccountNumber(toAccount.getAccountNumber());
+        toTransferInfoModel.setFirstName(toUser.getFirstName());
+        toTransferInfoModel.setEmail(toUser.getEmail());
+
+        debit(fromAccount, fromUser, transferAmount);
+        credit(toAccount, toUser, transferAmount);
+
+        TransactionModel transactionModel = new TransactionModel();
+        transactionModel.setAmount(transferAmount);
+        transactionModel.setTransferFrom(fromTransferInfoModel);
+        transactionModel.setTransferTo(toTransferInfoModel);
+
+        return transactionModel;
+    }
+
+
+
+
+    /**
+     * Deducts the specified amount from the given account after validating balance constraints.
+     *
+     * This method performs the following checks and operations:
+     * - Verifies if the account has enough balance to allow the debit.
+     * - Ensures that the remaining balance after the debit is not below the required minimum balance.
+     * - Updates the account balance and saves it to the repository.
+     * - Adds a passbook entry for the debit transaction.
+     *
+     * Throws a DataValidationException in the following cases:
+     * - If the account balance is insufficient for the requested debit.
+     * - If the resulting balance after debit would fall below the minimum balance requirement.
+     * - If the debit amount exactly equals the account balance (as this would violate the minimum balance rule).
+     *
+     * @param account the account from which money will be debited
+     * @param user the user who owns the account
+     * @param debitAmount the amount to be deducted from the account
+     */
+    public void debit (Account account, User user, double debitAmount) {
+
+        double minimumBalance = 2000;
+
+        if (account.getAccountBalance() > debitAmount) {
+
+            double balance = account.getAccountBalance();
+            double amount = debitAmount;
+            double newBalance = balance - amount;
+
+            if (newBalance >= minimumBalance) {
+                account.setAccountBalance(newBalance);
+                accountRepository.save(account);
+                double totalBalance = account.getAccountBalance();
+
+                passbookEntry(account, user, debitAmount, 0.0, totalBalance);
+            } else {
+                throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
+            }
+        } else if (account.getAccountBalance() == debitAmount) {
+            throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
+        } else {
+            throw new DataValidationException("Insufficient Balance");
+        }
+    }
+
+
+
+    /**
+     * Adds the specified amount to the given account's balance and records the transaction.
+     *
+     * This method performs the following operations:
+     * - Increases the account balance by the provided credit amount.
+     * - Saves the updated account to the repository.
+     * - Creates a passbook entry to record the credit transaction.
+     *
+     * @param account the account to which the amount will be credited
+     * @param user the user who owns the account
+     * @param creditAmount the amount to be added to the account balance
+     */
+    public void credit (Account account, User user, double creditAmount) {
+
+        account.setAccountBalance(account.getAccountBalance() + creditAmount);
+        accountRepository.save(account);
+        double totalBalance = account.getAccountBalance();
+
+        passbookEntry(account, user, 0.0, creditAmount, totalBalance);
+    }
+
+
+    public void passbookEntry (Account account, User user, double debitAmount, double creditAmount, double balance) {
+        Passbook passbook = new Passbook();
+        passbook.setAccount(account);
+        passbook.setUser(user);
+        passbook.setCredit(creditAmount);
+        passbook.setDebit(debitAmount);
+        passbook.setBalance(balance);
+        passbookRepository.save(passbook);
+    }
 }
