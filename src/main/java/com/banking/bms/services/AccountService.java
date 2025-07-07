@@ -3,11 +3,14 @@ package com.banking.bms.services;
 import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.AccountMapper;
+import com.banking.bms.mappers.PassbookMapper;
 import com.banking.bms.mappers.UserMapper;
 import com.banking.bms.model.AccountModel;
+import com.banking.bms.model.PassbookModel;
 import com.banking.bms.model.TransactionModel;
 import com.banking.bms.model.TransferInfoModel;
 import com.banking.bms.model.UserAccountModel;
+import com.banking.bms.model.UserPassbookModel;
 import com.banking.bms.model.TransferMessageModel;
 import com.banking.bms.model.entities.Account;
 import com.banking.bms.model.entities.Passbook;
@@ -16,6 +19,7 @@ import com.banking.bms.repository.AccountRepository;
 import com.banking.bms.repository.PassbookRepository;
 import com.banking.bms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +39,8 @@ public class AccountService {
     private final UserMapper userMapper;
 
     private final PassbookRepository passbookRepository;
+
+    private final PassbookMapper passbookMapper;
 
 
 
@@ -156,6 +162,27 @@ public class AccountService {
         return transferMessageModel;
     }
 
+
+    public UserPassbookModel getPassbook(Long accountNumber, String direction) {
+
+        Sort sortDirection = Sort.by(Sort.Direction.fromString(direction), "dateTime");
+
+        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
+                new DataNotFoundException("Account not found with account number: " + accountNumber));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+        List<Passbook> passbookList = passbookRepository.findByAccountAccountId(account.getAccountId(), sortDirection);
+
+        List<PassbookModel> passbookModelList = passbookMapper.passbookListToPassbookModelList(passbookList);
+
+        UserPassbookModel userPassbookModel = new UserPassbookModel();
+        userPassbookModel.setAccountNumber(accountNumber);
+        userPassbookModel.setFirstName(user.getFirstName());
+        userPassbookModel.setLastName(user.getLastName());
+        userPassbookModel.setEmail(user.getEmail());
+        userPassbookModel.setPassbook(passbookModelList);
+
+        return userPassbookModel;
+    }
 
 
     /**

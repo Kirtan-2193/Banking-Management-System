@@ -16,6 +16,6 @@ public class AccountModel {
 
     private String accountBranch;
 
-    private String accountBalance;
+    private double accountBalance;
 
 }

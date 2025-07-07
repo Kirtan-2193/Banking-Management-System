@@ -1,9 +1,6 @@
 package com.banking.bms.controller;
 
-import com.banking.bms.model.AccountModel;
-import com.banking.bms.model.TransactionModel;
-import com.banking.bms.model.TransferMessageModel;
-import com.banking.bms.model.UserAccountModel;
+import com.banking.bms.model.*;
 import com.banking.bms.services.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +16,8 @@ public class AccountController {
     private final AccountService accountService;
 
     @PostMapping
-    public ResponseEntity<UserAccountModel> addAccount(@RequestBody List<AccountModel> accountModel, @RequestParam String userId) {
+    public ResponseEntity<UserAccountModel> addAccount(@RequestBody List<AccountModel> accountModel,
+                                                       @RequestParam String userId) {
         return ResponseEntity.ok(accountService.insertAccount(accountModel, userId));
     }
 
@@ -45,5 +43,11 @@ public class AccountController {
     public ResponseEntity<TransferMessageModel> withdrawMoney(@RequestParam Long accountNumber,
                                                               @RequestParam double withdrawAmount) {
         return ResponseEntity.ok(accountService.withdrawMoney(accountNumber, withdrawAmount));
+    }
+
+    @GetMapping("/passbook")
+    public ResponseEntity<UserPassbookModel> getPassbookEntries(@RequestParam Long accountNumber,
+                                                                @RequestParam(required = false, defaultValue = "DESC") String sortDirection) {
+        return ResponseEntity.ok(accountService.getPassbook(accountNumber, sortDirection));
     }
 }
