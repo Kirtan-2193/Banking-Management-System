@@ -2,6 +2,7 @@ package com.banking.bms.controller;
 
 import com.banking.bms.model.AccountModel;
 import com.banking.bms.model.TransactionModel;
+import com.banking.bms.model.TransferMessageModel;
 import com.banking.bms.model.UserAccountModel;
 import com.banking.bms.services.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +33,17 @@ public class AccountController {
                                                               @RequestParam Long toAccountNumber,
                                                               @RequestParam double transferAmount) {
         return ResponseEntity.ok(accountService.transferMoney(fromAccountNumber, toAccountNumber, transferAmount));
+    }
+
+    @PostMapping("/deposit")
+    public ResponseEntity<TransferMessageModel> depositMoney(@RequestParam Long accountNumber,
+                                                             @RequestParam double depositAmount) {
+        return ResponseEntity.ok(accountService.depositMoney(accountNumber, depositAmount));
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<TransferMessageModel> withdrawMoney(@RequestParam Long accountNumber,
+                                                              @RequestParam double withdrawAmount) {
+        return ResponseEntity.ok(accountService.withdrawMoney(accountNumber, withdrawAmount));
     }
 }
