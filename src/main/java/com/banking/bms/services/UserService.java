@@ -14,6 +14,10 @@ import com.banking.bms.repository.RoleRepository;
 import com.banking.bms.repository.UserRepository;
 import com.banking.bms.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +38,34 @@ public class UserService {
 
     private final RoleMapper roleMapper;
 
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+    private final AuthenticationManager authenticationManager;
+
+    private final JWTService jwtService;
+
+
+
+
+    public String verifyUser(UserModel userModel) {
+
+        boolean tokenValid = false;
+
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                userModel.getEmail(),
+                userModel.getPassword()));
+
+        if (authentication.isAuthenticated()) {
+            tokenValid = true;
+        }
+        if (!tokenValid) {
+            new DataValidationException("Please Enter Correct Email and Password");
+        }
+
+        return jwtService.generateToken(userModel.getEmail());
+    }
+
+
 
     @Transactional
     public UserModel insertUser(UserModel userModel) {
@@ -43,6 +75,7 @@ public class UserService {
         }
 
         User user = userMapper.userModelToUser(userModel);
+        user.setPassword(encoder.encode(userModel.getPassword()));
         user = userRepository.save(user);
 
         List<String> roleIdsFromModel = userModel.getRoles().stream().map(r -> r.getRoleId()).toList();
@@ -77,6 +110,8 @@ public class UserService {
 
         return userModelToReturn;
     }
+
+
 
     public List<UserModel> getAllUser(String search) {
 
@@ -123,7 +158,7 @@ public class UserService {
 
         userMapper.updateUserFromUserModel(userModel, user);
         user.setUserId(userId);
-
+        user.setPassword(encoder.encode(userModel.getPassword()));
         User saveUser = userRepository.save(user);
 
         List<String> roleIdsFromModel = userModel.getRoles().stream().map(r -> r.getRoleId()).toList();
@@ -188,17 +223,17 @@ public class UserService {
         for (UserRole userRole : existingRoleInUser) {
             String roleId = userRole.getRole().getRoleId();
 
-                if (roleIdsFromModel.contains(roleId)) {
-                    if (userRole.getStatus().equals(Status.INACTIVE)) {
-                        userRole.setStatus(Status.ACTIVE);
-                        userRoleRepository.save(userRole);
-                    }
-                }else {
-                    if (userRole.getStatus().equals(Status.ACTIVE)) {
-                        userRole.setStatus(Status.INACTIVE);
-                        userRoleRepository.save(userRole);
-                    }
+            if (roleIdsFromModel.contains(roleId)) {
+                if (userRole.getStatus().equals(Status.INACTIVE)) {
+                    userRole.setStatus(Status.ACTIVE);
+                    userRoleRepository.save(userRole);
                 }
+            }else {
+                if (userRole.getStatus().equals(Status.ACTIVE)) {
+                    userRole.setStatus(Status.INACTIVE);
+                    userRoleRepository.save(userRole);
+                }
+            }
         }
     }
 }
