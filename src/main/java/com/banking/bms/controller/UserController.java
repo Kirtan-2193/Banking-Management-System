@@ -15,10 +15,16 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<UserModel> addUser(@RequestBody UserModel userModel) {
         return ResponseEntity.ok(userService.insertUser(userModel));
     }
+
+    @PostMapping("/login")
+    public String login(@RequestBody UserModel userModel) {
+        return userService.verifyUser(userModel);
+    }
+
 
     @GetMapping
     public ResponseEntity<List<UserModel>> getAllUser(@RequestParam(required = false) String search) {
