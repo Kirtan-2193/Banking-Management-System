@@ -1,6 +1,7 @@
 package com.banking.bms.model.entities;
 
 import com.banking.bms.enumerations.Status;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,25 +18,23 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
 
 @Entity
-@Table(name = "role")
+@Table(name = "permission")
 @Data
-public class Role {
+public class Permission {
 
     @Id
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "uuid2")
-    @Column(name = "role_id")
-    private String roleId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @Column(name = "permission_id")
+    private String permissionId;
 
-    private String roleName;
+    @Column(name = "permission_name")
+    private String permissionName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status = Status.ACTIVE;
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-    private List<UserRole> userRoles;
-
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "permission", cascade = CascadeType.ALL)
     private List<RolePermission> rolePermission;
 }

@@ -12,6 +12,7 @@ INSERT INTO public.role (role_id, role_name, status) VALUES ('67st7689-efg8-4h64
 
 
 
+
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
