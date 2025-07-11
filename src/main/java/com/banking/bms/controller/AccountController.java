@@ -4,6 +4,7 @@ import com.banking.bms.model.*;
 import com.banking.bms.services.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,8 @@ public class AccountController {
 
     private final AccountService accountService;
 
-    @PostMapping
+    @PostMapping("/add-account")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).ACCOUNT_CREATE)")
     public ResponseEntity<UserAccountModel> addAccount(@RequestBody List<AccountModel> accountModel,
                                                        @RequestParam String userId) {
         return ResponseEntity.ok(accountService.insertAccount(accountModel, userId));

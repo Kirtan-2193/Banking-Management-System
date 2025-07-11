@@ -1,5 +1,6 @@
 package com.banking.bms.model.entities;
 
+import com.banking.bms.enumerations.PermissionEnum;
 import com.banking.bms.enumerations.Status;
 
 import jakarta.persistence.CascadeType;
@@ -28,8 +29,9 @@ public class Permission {
     @Column(name = "permission_id")
     private String permissionId;
 
-    @Column(name = "permission_name")
-    private String permissionName;
+    @Column(name = "permission_name", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PermissionEnum permissionName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
