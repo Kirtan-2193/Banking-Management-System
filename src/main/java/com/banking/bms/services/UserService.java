@@ -14,9 +14,12 @@ import com.banking.bms.repository.RoleRepository;
 import com.banking.bms.repository.UserRepository;
 import com.banking.bms.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +68,15 @@ public class UserService {
         return jwtService.generateToken(userModel.getEmail());
     }
 
+    @Transactional(readOnly = true)
+    public User getLoginUser() {
+        final var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (ObjectUtils.isNotEmpty(authentication) && authentication.getPrincipal() instanceof UserDetails userDetails) {
+            return userRepository.findByEmail(userDetails.getUsername());
+        }
+        throw new DataValidationException("Token is Required");
+    }
 
 
     @Transactional
