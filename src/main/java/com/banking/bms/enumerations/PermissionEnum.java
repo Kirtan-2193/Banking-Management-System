@@ -10,6 +10,8 @@ public enum PermissionEnum {
     USER_LOGOUT,
     ASSIGN_ROLES,
 
+    VIEW_ROLE,
+
     USER_VIEW,
     USER_UPDATE,
     USER_DELETE,
