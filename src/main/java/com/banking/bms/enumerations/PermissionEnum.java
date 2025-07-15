@@ -5,38 +5,31 @@ import lombok.Getter;
 @Getter
 public enum PermissionEnum {
 
-    USER_REGISTER,
-    USER_LOGIN,
-    USER_LOGOUT,
-    ASSIGN_ROLES,
+    VIEW_ROLE,                  // -> Admin
+    VIEW_USER,                  //-> Admin,Manager
+    VIEW_ACCOUNT,               // -> Customer
+    VIEW_ALL_ACCOUNT,           // -> Admin, Manager
+    VIEW_TRANSACTION,           // -> Customer
+    VIEW_ALL_TRANSACTION,       // -> Admin, Manager, Teller
+    VIEW_LOAN,                  // -> Customer
+    VIEW_ALL_LOAN,              // -> Admin, Manager, Loan Officer
 
-    VIEW_ROLE,
+    REGISTER_USER,              // -> Admin
 
-    USER_VIEW,
-    USER_UPDATE,
-    USER_DELETE,
-    USER_LIST,
+    UPDATE_USER,                // -> Admin
+    UPDATE_ACCOUNT,             // -> Admin, Manager
 
-    ACCOUNT_CREATE,
-    ACCOUNT_VIEW,
-    ACCOUNT_UPDATE,
-    ACCOUNT_DELETE,
+    CREATE_ACCOUNT,	            // -> Admin, Manager
 
-    TRANSACTION_DEPOSIT,
-    TRANSACTION_WITHDRAW,
-    TRANSACTION_TRANSFER,
-    TRANSACTION_VIEW,
+    DELETE_USER,                // -> Admin
+    DELETE_ACCOUNT,             // -> Admin, Manager
 
-    LOAN_APPLY,
-    LOAN_VIEW,
-    LOAN_APPROVE,
-    LOAN_REJECT,
-    LOAN_STATUS_VIEW,
+    DEPOSIT_TRANSACTION,        // -> Customer
+    WITHDRAW_TRANSACTION,       // -> Customer
+    TRANSFER_TRANSACTION,       // -> Customer
 
-    AUDIT_LOG_VIEW,
-    AUDIT_TRANSACTION_REVIEW,
+    APPLY_LOAN,                 // -> Customer
 
-    SUPPORT_TICKET_CREATE,
-    SUPPORT_TICKET_VIEW,
-    SUPPORT_TICKET_UPDATE
+    LOAN_APPROVE,               // -> Admin, Manager, Loan Officer
+    LOAN_REJECT                 // -> Admin, Manager, Loan Officer
 }
