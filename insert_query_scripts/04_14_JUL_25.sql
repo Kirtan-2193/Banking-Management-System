@@ -1,18 +1,4 @@
 --
--- Data for Name: permission; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.permission (permission_id, permission_name, status) VALUES ('9f079d2e-5d83-4039-9246-b13de9986f99', 'VIEW_ROLE', 'ACTIVE');
-
-
---
--- Data for Name: role_permission; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.role_permission (role_permission_id, role_id, permission_id, status) VALUES ('28b7585c-fdea-4132-988c-59eb13f837d5', 'hg6597d6-e225-4b77-ba7a-756bd88f26cfx', '9f079d2e-5d83-4039-9246-b13de9986f99', 'ACTIVE'); -- USER_REGISTER (Admin)
-
-
---
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
