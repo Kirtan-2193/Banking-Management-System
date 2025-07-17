@@ -29,6 +29,12 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getAccountByUser(userId));
     }
 
+    @GetMapping("/search")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).VIEW_ALL_ACCOUNT)")
+    public ResponseEntity<List<UserAccountModel>> getAllUsersAccount(@RequestParam(required = false) Long search) {
+        return ResponseEntity.ok(accountService.getAllAccount(search));
+    }
+
     @PostMapping("/net-banking")
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).TRANSFER_TRANSACTION)")
     public ResponseEntity<TransactionModel> onlineTransaction(@RequestParam Long fromAccountNumber,

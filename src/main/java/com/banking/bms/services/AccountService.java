@@ -78,6 +78,46 @@ public class AccountService {
     }
 
 
+
+    public List<UserAccountModel> getAllAccount(Long accountNumber) {
+
+        if (accountNumber != null) {
+
+            Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
+                    new DataNotFoundException("Account not found with account number: " + accountNumber));
+
+            User user = userRepository.findByEmail(account.getUser().getEmail());
+
+            List<Account> accountList = new ArrayList<>();
+            accountList.add(account);
+
+            List<AccountModel> accountModelList = accountMapper.accountListToAccountModelList(accountList);
+            UserAccountModel userAccountModel = userMapper.userToUserAccountModel(user);
+            userAccountModel.setAccountModelList(accountModelList);
+
+            List<UserAccountModel> userAccountModelList = new ArrayList<>();
+            userAccountModelList.add(userAccountModel);
+            return userAccountModelList;
+        }
+
+        List<User> userList = userRepository.findAll();
+
+        List<UserAccountModel> userAccountModelList = new ArrayList<>();
+        userList.forEach(user -> {
+            List<Account> accountList = accountRepository.findByUserUserId(user.getUserId());
+            List<AccountModel> accountModelList = accountMapper.accountListToAccountModelList(accountList);
+            UserAccountModel userAccountModel = userMapper.userToUserAccountModel(user);
+            userAccountModel.setAccountModelList(accountModelList);
+            if (accountModelList != null && !accountModelList.isEmpty()) {
+                userAccountModelList.add(userAccountModel);
+            }
+        });
+
+        return userAccountModelList;
+    }
+
+
+
     /**
      * Transfers money from one account to another.
      *
