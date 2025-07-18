@@ -43,4 +43,10 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Passbook> passbooks;
+
+    @OneToMany(mappedBy = "customerId", cascade = CascadeType.ALL)
+    private List<Loan> customer;
+
+    @OneToMany(mappedBy = "approvedBy", cascade = CascadeType.ALL)
+    private List<Loan> approvedBy;
 }
