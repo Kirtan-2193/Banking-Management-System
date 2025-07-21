@@ -48,7 +48,7 @@ public class Loan {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "loan_status")
-    private LoanStatus loanStatus;
+    private LoanStatus loanStatus = LoanStatus.PENDING;
 
     @Column(name = "start_date")
     private LocalDate startDate;
