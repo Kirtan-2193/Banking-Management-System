@@ -3,6 +3,8 @@ package com.banking.bms.mappers;
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
 import com.banking.bms.model.UserAccountModel;
+import com.banking.bms.model.UserDetailModel;
+import com.banking.bms.model.UserLoanModal;
 import com.banking.bms.model.UserModel;
 import com.banking.bms.model.entities.User;
 import org.mapstruct.*;
@@ -27,4 +29,8 @@ public interface UserMapper {
 
     UserAccountModel userToUserAccountModel(User user);
 
+    @Mapping(target = "approvedBy", ignore = true)
+    UserLoanModal userToUserLoanModal(User user);
+
+    UserDetailModel userToUserDetailModel(User user);
 }
