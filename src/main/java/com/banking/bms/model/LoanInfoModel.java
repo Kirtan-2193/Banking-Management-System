@@ -30,4 +30,6 @@ public class LoanInfoModel {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDate endDate;
+
+    private String remarks;
 }

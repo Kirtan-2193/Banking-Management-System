@@ -1,5 +1,6 @@
 package com.banking.bms.services;
 
+import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.enumerations.Status;
 import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.AccountMapper;
@@ -35,8 +36,6 @@ public class LoanService {
     private final UserRoleRepository userRoleRepository;
 
     private final AccountService accountService;
-
-    private final AccountMapper accountMapper;
 
     private final LoanMapper loanMapper;
 
@@ -88,9 +87,7 @@ public class LoanService {
 
     public List<UserLoanModal> getAllLoans(Long loanNumber) {
 
-        List<Loan> loanList = loanRepository.findByLoanNumber(loanNumber);
-
-        Set<String> allowedRoles = Set.of("admin", "manager", "loan officer");
+        List<Loan> loanList = loanRepository.findAllLoan(loanNumber);
 
         return loanList.stream().map(loan -> {
 
@@ -107,15 +104,7 @@ public class LoanService {
             UserDetailModel userDetailModel = new UserDetailModel();
 
             if (loan.getApprovedBy() != null) {
-                User approver = userRepository.findByEmail(loan.getApprovedBy().getEmail());
-
-                userDetailModel = userMapper.userToUserDetailModel(approver);
-                List<UserRole> byUserUserId = userRoleRepository.findByUserUserIdAndStatus(approver.getUserId(), Status.ACTIVE);
-                List<RoleModel> roleModelList = new ArrayList<>();
-                byUserUserId.forEach(ur -> roleModelList.add(roleMapper.roleToRoleModel(ur.getRole())));
-                String role = roleModelList.stream().map(roleModel -> roleModel.getRoleName().trim())
-                        .filter(n -> allowedRoles.contains(n.toLowerCase())).findFirst().orElse(null);
-                userDetailModel.setRole(role);
+                userDetailModel = getUserDetail(loan.getApprovedBy().getEmail());
             } else {
                 userDetailModel = null;
             }
@@ -123,5 +112,73 @@ public class LoanService {
             userLoanModal.setApprovedBy(userDetailModel);
             return userLoanModal;
         }).toList();
+    }
+
+
+
+    public UserLoanModal approveLoan(Long loanNumber, String email) {
+        Loan loan = loanRepository.findByLoanNumber(loanNumber);
+
+        User approver = userRepository.findByEmail(email);
+        loan.setApprovedBy(approver);
+        loan.setLoanStatus(LoanStatus.APPROVED);
+        Loan savedLoan = loanRepository.save(loan);
+
+        Account account = accountRepository.findByAccountNumber(savedLoan.getAccountNumber()).orElseThrow(() ->
+                new DataValidationException("Account not found"));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+
+        accountService.credit(account, user, savedLoan.getLoanAmount());
+
+        return approveOrRejectLoan(savedLoan, approver);
+    }
+
+
+    public UserLoanModal rejectLoan(Long loanNumber, String email, String remarks) {
+        Loan loan = loanRepository.findByLoanNumber(loanNumber);
+
+        User approver = userRepository.findByEmail(email);
+        loan.setApprovedBy(approver);
+        loan.setRemarks(remarks);
+        loan.setLoanStatus(LoanStatus.REJECTED);
+        Loan savedLoan = loanRepository.save(loan);
+
+        return approveOrRejectLoan(savedLoan, approver);
+    }
+
+
+
+
+    public UserLoanModal approveOrRejectLoan(Loan loan, User approver) {
+        Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
+                new DataValidationException("Account not found"));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+
+        UserLoanModal userLoanModal = userMapper.userToUserLoanModal(user);
+        userLoanModal.setAccountNumber(loan.getAccountNumber());
+        LoanInfoModel loanInfoModel = loanMapper.loanToLoanInfoModel(loan);
+        loanInfoModel.setEmi(calculateEMI(loan.getLoanAmount(), loan.getInterestRate(), loan.getLoanTerm()));
+        userLoanModal.setLoanInfoModel(loanInfoModel);
+        userLoanModal.setApprovedBy(getUserDetail(approver.getEmail()));
+
+        return userLoanModal;
+    }
+
+
+    public UserDetailModel getUserDetail(String email) {
+
+        Set<String> allowedRoles = Set.of("admin", "manager", "loan officer");
+
+        User approver = userRepository.findByEmail(email);
+
+        UserDetailModel userDetailModel = userMapper.userToUserDetailModel(approver);
+        List<UserRole> byUserUserId = userRoleRepository.findByUserUserIdAndStatus(approver.getUserId(), Status.ACTIVE);
+        List<RoleModel> roleModelList = new ArrayList<>();
+        byUserUserId.forEach(ur -> roleModelList.add(roleMapper.roleToRoleModel(ur.getRole())));
+        String role = roleModelList.stream().map(roleModel -> roleModel.getRoleName().trim())
+                .filter(n -> allowedRoles.contains(n.toLowerCase())).findFirst().orElse(null);
+        userDetailModel.setRole(role);
+
+        return userDetailModel;
     }
 }
