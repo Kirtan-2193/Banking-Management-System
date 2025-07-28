@@ -13,5 +13,7 @@ public interface LoanRepository extends JpaRepository<Loan, String> {
             "FROM loan l " +
             "WHERE (:search IS NULL OR CAST(l.loan_number AS TEXT) ILIKE CONCAT('%', :search, '%'))",
             nativeQuery = true)
-    List<Loan> findByLoanNumber(@Param("search") Long search);
+    List<Loan> findAllLoan(@Param("search") Long search);
+
+    Loan findByLoanNumber(Long loanNumber);
 }

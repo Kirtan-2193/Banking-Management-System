@@ -36,4 +36,17 @@ public class LoanController {
     public ResponseEntity<List<UserLoanModal>> getAllLoans(@RequestParam(required = false) Long loanNumber) {
         return ResponseEntity.ok(loanService.getAllLoans(loanNumber));
     }
+
+    @PutMapping("/approve")
+    public ResponseEntity<UserLoanModal> approveLoan(@RequestParam Long loanNumber,
+                                                     @RequestParam String email) {
+        return ResponseEntity.ok(loanService.approveLoan(loanNumber, email));
+    }
+
+    @PutMapping("/reject")
+    public ResponseEntity<UserLoanModal> rejectLoan(@RequestParam Long loanNumber,
+                                                    @RequestParam String email,
+                                                    @RequestParam String remarks) {
+        return ResponseEntity.ok(loanService.rejectLoan(loanNumber, email, remarks));
+    }
 }
