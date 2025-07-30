@@ -2,6 +2,7 @@ package com.banking.bms.controller;
 
 import com.banking.bms.model.LoanCalculate;
 import com.banking.bms.model.LoanInfoModel;
+import com.banking.bms.model.MessageModel;
 import com.banking.bms.model.UserLoanModal;
 import com.banking.bms.services.LoanService;
 import jakarta.validation.Valid;
@@ -48,5 +49,10 @@ public class LoanController {
                                                     @RequestParam String email,
                                                     @RequestParam String remarks) {
         return ResponseEntity.ok(loanService.rejectLoan(loanNumber, email, remarks));
+    }
+
+    @PutMapping("/pay-emi")
+    public ResponseEntity<MessageModel> transferEMIs(@RequestParam Long loanNumber) {
+        return ResponseEntity.ok(loanService.payEMI(loanNumber));
     }
 }

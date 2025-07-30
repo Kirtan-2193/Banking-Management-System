@@ -3,7 +3,6 @@ package com.banking.bms.services;
 import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.enumerations.Status;
 import com.banking.bms.exceptions.DataValidationException;
-import com.banking.bms.mappers.AccountMapper;
 import com.banking.bms.mappers.LoanMapper;
 import com.banking.bms.mappers.RoleMapper;
 import com.banking.bms.mappers.UserMapper;
@@ -146,6 +145,42 @@ public class LoanService {
         return approveOrRejectLoan(savedLoan, approver);
     }
 
+
+
+    public MessageModel payEMI(Long loanNumber){
+        Loan loan = loanRepository.findByLoanNumber(loanNumber);
+
+        if (loan == null) {
+            throw new DataValidationException("Loan not found");
+        }
+
+        Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
+                new DataValidationException("Account not found"));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+
+        if (loan.getLoanStatus() == LoanStatus.APPROVED || loan.getLoanStatus() == LoanStatus.ACTIVE) {
+            double emi = calculateEMI(loan.getLoanAmount(), loan.getInterestRate(), loan.getLoanTerm());
+
+            accountService.debit(account, user, emi);
+
+            loan.setEmiPaidCount(loan.getEmiPaidCount() + 1);
+            loan.setLoanStatus(LoanStatus.ACTIVE);
+
+            if (loan.getEmiPaidCount() >= loan.getLoanTerm()) {
+                loan.setLoanStatus(LoanStatus.CLOSED);
+            }
+            loanRepository.save(loan);
+            String mgs = "EMI paid successfully";
+            MessageModel messageModel = new MessageModel();
+            messageModel.setMessage(mgs);
+            return messageModel;
+        } else {
+            String mgs = "Loan is already closed";
+            MessageModel messageModel = new MessageModel();
+            messageModel.setMessage(mgs);
+            return messageModel;
+        }
+    }
 
 
 
