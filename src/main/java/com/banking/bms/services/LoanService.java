@@ -3,7 +3,6 @@ package com.banking.bms.services;
 import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.enumerations.Status;
 import com.banking.bms.exceptions.DataValidationException;
-import com.banking.bms.mappers.AccountMapper;
 import com.banking.bms.mappers.LoanMapper;
 import com.banking.bms.mappers.RoleMapper;
 import com.banking.bms.mappers.UserMapper;
@@ -19,7 +18,6 @@ import com.banking.bms.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
