@@ -1,10 +1,12 @@
 package com.banking.bms.repository;
 
+import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.model.entities.Loan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface LoanRepository extends JpaRepository<Loan, String> {
@@ -16,4 +18,6 @@ public interface LoanRepository extends JpaRepository<Loan, String> {
     List<Loan> findAllLoan(@Param("search") Long search);
 
     Loan findByLoanNumber(Long loanNumber);
+
+    List<Loan> findByLoanStatusInAndNextEmiDueDate(List<LoanStatus> loanStatus, LocalDate currentDate);
 }
