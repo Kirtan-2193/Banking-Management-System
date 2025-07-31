@@ -6,7 +6,12 @@ import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.LoanMapper;
 import com.banking.bms.mappers.RoleMapper;
 import com.banking.bms.mappers.UserMapper;
-import com.banking.bms.model.*;
+import com.banking.bms.model.LoanCalculate;
+import com.banking.bms.model.LoanInfoModel;
+import com.banking.bms.model.MessageModel;
+import com.banking.bms.model.RoleModel;
+import com.banking.bms.model.UserDetailModel;
+import com.banking.bms.model.UserLoanModal;
 import com.banking.bms.model.entities.Account;
 import com.banking.bms.model.entities.Loan;
 import com.banking.bms.model.entities.User;
@@ -16,14 +21,20 @@ import com.banking.bms.repository.LoanRepository;
 import com.banking.bms.repository.UserRepository;
 import com.banking.bms.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LoanService {
 
     private final LoanRepository loanRepository;
@@ -46,10 +57,8 @@ public class LoanService {
 
     public double calculateEMI(double loanAmount, double loanInterest, int loanTerm) {
         double monthlyInterestRate = loanInterest / (12 * 100);
-        double emi = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTerm))
+        return (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTerm))
                 / (Math.pow(1 + monthlyInterestRate, loanTerm) - 1);
-
-        return emi;
     }
 
     public LoanCalculate calculateLoanEMI(double loanAmount, double interestRate, int termMonths) {
@@ -67,8 +76,6 @@ public class LoanService {
 
 
     public LoanInfoModel applyLoan(LoanInfoModel loanInfoModel, Long accountNumber) {
-        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(()
-                -> new DataValidationException("Account not found"));
 
         double emi = calculateEMI(loanInfoModel.getLoanAmount(), loanInfoModel.getInterestRate(), loanInfoModel.getLoanTerm());
 
@@ -146,40 +153,37 @@ public class LoanService {
     }
 
 
+    @Transactional
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 2) // Every 2 hours
+    public MessageModel payEMI(){
+        log.info("EMI scheduler triggered at " + LocalDateTime.now());
 
-    public MessageModel payEMI(Long loanNumber){
-        Loan loan = loanRepository.findByLoanNumber(loanNumber);
+        List<Loan> loanList = loanRepository.findByLoanStatusInAndNextEmiDueDate(
+                List.of(LoanStatus.APPROVED, LoanStatus.ACTIVE), LocalDate.now());
+        String mgs = "No EMI to pay";
 
-        if (loan == null) {
-            throw new DataValidationException("Loan not found");
-        }
+        for (Loan loan : loanList) {
+            Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
+                    new DataValidationException("Account not found"));
+            User user = userRepository.findByEmail(account.getUser().getEmail());
 
-        Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
-                new DataValidationException("Account not found"));
-        User user = userRepository.findByEmail(account.getUser().getEmail());
-
-        if (loan.getLoanStatus() == LoanStatus.APPROVED || loan.getLoanStatus() == LoanStatus.ACTIVE) {
             double emi = calculateEMI(loan.getLoanAmount(), loan.getInterestRate(), loan.getLoanTerm());
 
             accountService.debit(account, user, emi);
 
             loan.setEmiPaidCount(loan.getEmiPaidCount() + 1);
             loan.setLoanStatus(LoanStatus.ACTIVE);
+            loan.setNextEmiDueDate(loan.getNextEmiDueDate().plusMonths(1));
 
             if (loan.getEmiPaidCount() >= loan.getLoanTerm()) {
                 loan.setLoanStatus(LoanStatus.CLOSED);
             }
             loanRepository.save(loan);
-            String mgs = "EMI paid successfully";
-            MessageModel messageModel = new MessageModel();
-            messageModel.setMessage(mgs);
-            return messageModel;
-        } else {
-            String mgs = "Loan is already closed";
-            MessageModel messageModel = new MessageModel();
-            messageModel.setMessage(mgs);
-            return messageModel;
+            mgs = "EMI paid successfully";
         }
+        MessageModel messageModel = new MessageModel();
+        messageModel.setMessage(mgs);
+        return messageModel;
     }
 
 

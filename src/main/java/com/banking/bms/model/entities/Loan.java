@@ -58,6 +58,8 @@ public class Loan {
 
     private Long accountNumber;
 
+    private LocalDate nextEmiDueDate;
+
     @ManyToOne
     @JoinColumn(name = "approved_by")
     private User approvedBy;

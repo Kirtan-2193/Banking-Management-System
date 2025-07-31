@@ -52,7 +52,7 @@ public class LoanController {
     }
 
     @PutMapping("/pay-emi")
-    public ResponseEntity<MessageModel> transferEMIs(@RequestParam Long loanNumber) {
-        return ResponseEntity.ok(loanService.payEMI(loanNumber));
+    public ResponseEntity<MessageModel> transferEMIs() {
+        return ResponseEntity.ok(loanService.payEMI());
     }
 }
