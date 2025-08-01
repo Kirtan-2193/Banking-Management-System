@@ -130,13 +130,33 @@ public class LoanService {
         loan.setLoanStatus(LoanStatus.APPROVED);
         Loan savedLoan = loanRepository.save(loan);
 
-        Account account = accountRepository.findByAccountNumber(savedLoan.getAccountNumber()).orElseThrow(() ->
-                new DataValidationException("Account not found"));
-        User user = userRepository.findByEmail(account.getUser().getEmail());
-
-        accountService.credit(account, user, savedLoan.getLoanAmount());
-
         return approveOrRejectLoan(savedLoan, approver);
+    }
+
+
+    @Scheduled(cron = "0 30 10 * * ?") // Every day at 10:30 AM
+    @Transactional
+    public MessageModel activateLoan() {
+        log.info("Activate Loan method triggered at " + LocalDateTime.now());
+
+        List<Loan> loanList = loanRepository.findByLoanStatusAndStartDate(LoanStatus.APPROVED, LocalDate.now());
+        String mgs = "";
+
+        for (Loan loan : loanList) {
+            Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
+                    new DataValidationException("Account not found"));
+            User user = userRepository.findByEmail(account.getUser().getEmail());
+
+            accountService.credit(account, user, loan.getLoanAmount());
+            loan.setLoanStatus(LoanStatus.ACTIVE);
+            loan.setNextEmiDueDate(loan.getStartDate().plusMonths(1));
+            loanRepository.save(loan);
+
+            mgs = "Loan activated successfully";
+        }
+        MessageModel messageModel = new MessageModel();
+        messageModel.setMessage(mgs);
+        return messageModel;
     }
 
 
@@ -154,12 +174,11 @@ public class LoanService {
 
 
     @Transactional
-    @Scheduled(fixedRate = 1000 * 60 * 60 * 2) // Every 2 hours
+    @Scheduled(cron = "0 0 10 * * ?") // Every Day at 10:00 AM
     public MessageModel payEMI(){
         log.info("EMI scheduler triggered at " + LocalDateTime.now());
 
-        List<Loan> loanList = loanRepository.findByLoanStatusInAndNextEmiDueDate(
-                List.of(LoanStatus.APPROVED, LoanStatus.ACTIVE), LocalDate.now());
+        List<Loan> loanList = loanRepository.findByLoanStatusAndNextEmiDueDate(LoanStatus.ACTIVE, LocalDate.now());
         String mgs = "No EMI to pay";
 
         for (Loan loan : loanList) {

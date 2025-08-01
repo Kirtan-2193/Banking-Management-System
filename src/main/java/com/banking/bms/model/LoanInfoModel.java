@@ -3,6 +3,7 @@ package com.banking.bms.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -13,16 +14,16 @@ public class LoanInfoModel {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long loanNumber;
 
-    @NotBlank(message = "Loan type is required")
+    @NotNull(message = "Loan type is required")
     private String loanType;
 
-    @NotBlank(message = "Loan amount is required")
+    @NotNull(message = "Loan amount is required")
     private double loanAmount;
 
-    @NotBlank(message = "Interest rate is required")
+    @NotNull(message = "Interest rate is required")
     private double interestRate;
 
-    @NotBlank(message = "Loan term is required")
+    @NotNull(message = "Loan term is required")
     private Integer loanTerm;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -31,7 +32,7 @@ public class LoanInfoModel {
     private double emi;
 
     @FutureOrPresent(message = "Start date must be today or a future date")
-    @NotBlank(message = "Start date is required")
+    @NotNull(message = "Start date is required")
     private LocalDate startDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
