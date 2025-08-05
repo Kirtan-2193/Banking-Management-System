@@ -2,6 +2,8 @@ package com.banking.bms.model.entities;
 
 import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.enumerations.LoanType;
+import com.banking.bms.model.EmiPaidCountModel;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -15,8 +17,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Entity
@@ -67,8 +72,9 @@ public class Loan {
     @Column(name = "remarks")
     private String remarks;
 
-    @Column(name = "emi_paid_count")
-    private Integer emiPaidCount = 0;
+    @Type(value = JsonBinaryType.class)
+    @Column(name = "emi_paid_count", columnDefinition = "jsonb")
+    private List<EmiPaidCountModel> emiPaidCount = new ArrayList<>();
 
 
     @PrePersist

@@ -6,6 +6,7 @@ import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.LoanMapper;
 import com.banking.bms.mappers.RoleMapper;
 import com.banking.bms.mappers.UserMapper;
+import com.banking.bms.model.EmiPaidCountModel;
 import com.banking.bms.model.LoanCalculate;
 import com.banking.bms.model.LoanInfoModel;
 import com.banking.bms.model.MessageModel;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -190,13 +192,24 @@ public class LoanService {
 
             accountService.debit(account, user, emi);
 
-            loan.setEmiPaidCount(loan.getEmiPaidCount() + 1);
+            List<EmiPaidCountModel> existingEmipaidCountModelList = loan.getEmiPaidCount();
+
+            int count = existingEmipaidCountModelList.stream().mapToInt(c ->
+                    c.getEmiPaidCount()).max().orElse(0);
+            if (count >= loan.getLoanTerm()) {
+                loan.setLoanStatus(LoanStatus.CLOSED);
+            }
+
+            EmiPaidCountModel emiPaidCountModel = new EmiPaidCountModel();
+            emiPaidCountModel.setEmiPaidCount(count + 1);
+            emiPaidCountModel.setEmiAmount(emi);
+            emiPaidCountModel.setDateTime(String.valueOf(LocalDateTime.now()));
+            existingEmipaidCountModelList.add(emiPaidCountModel);
+
+            loan.setEmiPaidCount(existingEmipaidCountModelList);
             loan.setLoanStatus(LoanStatus.ACTIVE);
             loan.setNextEmiDueDate(loan.getNextEmiDueDate().plusMonths(1));
 
-            if (loan.getEmiPaidCount() >= loan.getLoanTerm()) {
-                loan.setLoanStatus(LoanStatus.CLOSED);
-            }
             loanRepository.save(loan);
             mgs = "EMI paid successfully";
         }

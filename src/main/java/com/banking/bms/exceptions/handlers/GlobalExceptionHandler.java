@@ -2,6 +2,7 @@ package com.banking.bms.exceptions.handlers;
 
 import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
+import com.banking.bms.exceptions.EncryptDecryptException;
 import com.banking.bms.model.error.ErrorResponse;
 import com.banking.bms.model.error.ErrorType;
 import org.springframework.http.HttpStatus;
@@ -55,5 +56,12 @@ public class GlobalExceptionHandler {
             errors.put("errorType", ErrorType.INVALID_DATA.name());
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EncryptDecryptException.class)
+    public ResponseEntity<ErrorResponse> handlerEncryptDecryptException(EncryptDecryptException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ErrorType.INTERNAL_ERROR);
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }
