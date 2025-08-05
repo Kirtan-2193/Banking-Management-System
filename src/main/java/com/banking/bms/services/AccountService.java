@@ -47,21 +47,26 @@ public class AccountService {
 
 
     @Transactional
-    public UserAccountModel insertAccount(List<AccountModel> accountModel, String userId) {
+    public UserAccountModel insertAccount(List<AccountModel> accountModelList, String userId) {
+        double minimumBalance = 2000;
         User user = userRepository.findByUserId(userId).orElseThrow(() ->
                 new DataNotFoundException("User not found with userId: " + userId));
 
-        List<Account> accountList = accountMapper.accountModelListToAccountList(accountModel);
-
-        List<Account> saveAccount = new ArrayList<>();
-        for (Account account : accountList) {
+        List<Account> saveAccountList = new ArrayList<>();
+        for (AccountModel accountModel : accountModelList) {
+            if (accountModel.getAccountBalance() <= minimumBalance) {
+                throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
+            }
+            Account account = accountMapper.accountModelToAccount(accountModel);
             account.setUser(user);
-            saveAccount.add(accountRepository.save(account));
+            Account saveAccount = accountRepository.save(account);
+            saveAccountList.add(saveAccount);
+            passbookEntry(saveAccount, user, 0.0, saveAccount.getAccountBalance(), saveAccount.getAccountBalance());
         }
 
-        List<AccountModel> accountModelList = accountMapper.accountListToAccountModelList(saveAccount);
+        List<AccountModel> returnaccountModelList = accountMapper.accountListToAccountModelList(saveAccountList);
         UserAccountModel userAccountModel = userMapper.userToUserAccountModel(user);
-        userAccountModel.setAccountModelList(accountModelList);
+        userAccountModel.setAccountModelList(returnaccountModelList);
 
         log.info("account created successfully for userId: {}", userId);
         return userAccountModel;

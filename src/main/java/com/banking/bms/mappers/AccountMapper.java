@@ -19,7 +19,7 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 )
 public interface AccountMapper {
 
-    List<Account> accountModelListToAccountList(List<AccountModel> accountModel);
+    Account accountModelToAccount(AccountModel accountModel);
 
     List<AccountModel> accountListToAccountModelList(List<Account> account);
 }
