@@ -44,6 +44,8 @@ public class AccountService {
 
     private final PassbookMapper passbookMapper;
 
+    private final EmailService emailService;
+
 
 
     @Transactional
@@ -267,6 +269,12 @@ public class AccountService {
                 double totalBalance = account.getAccountBalance();
 
                 passbookEntry(account, user, debitAmount, 0.0, totalBalance);
+
+                emailService.sendEmail(user.getEmail(),
+                            "Transaction Alert",
+                            "Dear " + user.getFirstName() + " , ₹ " + debitAmount + " has been " +
+                                    "debited from your account. Your new balance is ₹ " + totalBalance + ".");
+
             } else {
                 throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
             }
@@ -298,6 +306,11 @@ public class AccountService {
         double totalBalance = account.getAccountBalance();
 
         passbookEntry(account, user, 0.0, creditAmount, totalBalance);
+
+        emailService.sendEmail(user.getEmail(),
+                    "Transaction Alert",
+                    "Dear " + user.getFirstName() + ", ₹ " + creditAmount + " has been " +
+                            "credited to your account. Your new balance is ₹ " + totalBalance + ".");
     }
 
 
