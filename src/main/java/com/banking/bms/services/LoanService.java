@@ -136,7 +136,7 @@ public class LoanService {
     }
 
 
-    @Scheduled(cron = "0 30 10 * * ?") // Every day at 10:30 AM
+    @Scheduled(cron = "0 0 10 * * ?") // Every day at 10:00 AM
     @Transactional
     public MessageModel activateLoan() {
         log.info("Activate Loan method triggered at " + LocalDateTime.now());
@@ -176,7 +176,7 @@ public class LoanService {
 
 
     @Transactional
-    @Scheduled(cron = "0 0 10 * * ?") // Every Day at 10:00 AM
+    @Scheduled(cron = "0 30 10 * * ?") // Every Day at 10:30 AM
     public MessageModel payEMI(){
         log.info("EMI scheduler triggered at " + LocalDateTime.now());
 
