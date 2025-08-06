@@ -44,14 +44,14 @@ public class AccountController {
     }
 
     @PostMapping("/deposit")
-//    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).DEPOSIT_TRANSACTION)")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).DEPOSIT_TRANSACTION)")
     public ResponseEntity<TransferMessageModel> depositMoney(@RequestParam Long accountNumber,
                                                              @RequestParam double depositAmount) {
         return ResponseEntity.ok(accountService.depositMoney(accountNumber, depositAmount));
     }
 
     @PostMapping("/withdraw")
-//    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).WITHDRAW_TRANSACTION)")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).WITHDRAW_TRANSACTION)")
     public ResponseEntity<TransferMessageModel> withdrawMoney(@RequestParam Long accountNumber,
                                                               @RequestParam double withdrawAmount) {
         return ResponseEntity.ok(accountService.withdrawMoney(accountNumber, withdrawAmount));
