@@ -7,7 +7,7 @@ public enum LoanType {
     CAR_LOAN,
     GOLD_LOAN,
     LOAN_AGAINST_PROPERTY,
-    SECURED_BUSINESS_LOAN,
+    BUSINESS_LOAN,
 
     // Unsecured Loans
     PERSONAL_LOAN,
