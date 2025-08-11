@@ -5,13 +5,7 @@ import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.AccountMapper;
 import com.banking.bms.mappers.PassbookMapper;
 import com.banking.bms.mappers.UserMapper;
-import com.banking.bms.model.AccountModel;
-import com.banking.bms.model.PassbookModel;
-import com.banking.bms.model.TransactionModel;
-import com.banking.bms.model.TransferInfoModel;
-import com.banking.bms.model.UserAccountModel;
-import com.banking.bms.model.UserPassbookModel;
-import com.banking.bms.model.TransferMessageModel;
+import com.banking.bms.model.*;
 import com.banking.bms.model.entities.Account;
 import com.banking.bms.model.entities.Passbook;
 import com.banking.bms.model.entities.User;
@@ -53,7 +47,7 @@ public class AccountService {
         double minimumBalance = 2000;
         User user = userRepository.findByUserId(userId).orElseThrow(() ->
                 new DataNotFoundException("User not found with userId: " + userId));
-
+        Account saveAccount = null;
         List<Account> saveAccountList = new ArrayList<>();
         for (AccountModel accountModel : accountModelList) {
             if (accountModel.getAccountBalance() <= minimumBalance) {
@@ -61,7 +55,7 @@ public class AccountService {
             }
             Account account = accountMapper.accountModelToAccount(accountModel);
             account.setUser(user);
-            Account saveAccount = accountRepository.save(account);
+            saveAccount = accountRepository.save(account);
             saveAccountList.add(saveAccount);
             passbookEntry(saveAccount, user, 0.0, saveAccount.getAccountBalance(), saveAccount.getAccountBalance());
         }
@@ -69,6 +63,8 @@ public class AccountService {
         List<AccountModel> returnaccountModelList = accountMapper.accountListToAccountModelList(saveAccountList);
         UserAccountModel userAccountModel = userMapper.userToUserAccountModel(user);
         userAccountModel.setAccountModelList(returnaccountModelList);
+
+        emailService.createNewAccountEmail(user, saveAccount);
 
         log.info("account created successfully for userId: {}", userId);
         return userAccountModel;
@@ -270,10 +266,7 @@ public class AccountService {
 
                 passbookEntry(account, user, debitAmount, 0.0, totalBalance);
 
-                emailService.sendEmail(user.getEmail(),
-                            "Transaction Alert",
-                            "Dear " + user.getFirstName() + " , ₹ " + debitAmount + " has been " +
-                                    "debited from your account. Your new balance is ₹ " + totalBalance + ".");
+                emailService.debitEmail(user, debitAmount, totalBalance);
 
             } else {
                 throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
@@ -307,10 +300,7 @@ public class AccountService {
 
         passbookEntry(account, user, 0.0, creditAmount, totalBalance);
 
-        emailService.sendEmail(user.getEmail(),
-                    "Transaction Alert",
-                    "Dear " + user.getFirstName() + ", ₹ " + creditAmount + " has been " +
-                            "credited to your account. Your new balance is ₹ " + totalBalance + ".");
+        emailService.creditEmail(user, creditAmount, totalBalance);
     }
 
 

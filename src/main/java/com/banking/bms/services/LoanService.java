@@ -49,6 +49,8 @@ public class LoanService {
 
     private final AccountService accountService;
 
+    private final EmailService emailService;
+
     private final LoanMapper loanMapper;
 
     private final RoleMapper roleMapper;
@@ -127,10 +129,17 @@ public class LoanService {
     public UserLoanModal approveLoan(Long loanNumber, String email) {
         Loan loan = loanRepository.findByLoanNumber(loanNumber);
 
+        Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
+                new DataValidationException("Account not found"));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+        double emi = calculateEMI(loan.getLoanAmount(), loan.getInterestRate(), loan.getLoanTerm());
+
         User approver = userRepository.findByEmail(email);
         loan.setApprovedBy(approver);
         loan.setLoanStatus(LoanStatus.APPROVED);
         Loan savedLoan = loanRepository.save(loan);
+
+        emailService.loanApprovalEmail(user, account, savedLoan, emi);
 
         return approveOrRejectLoan(savedLoan, approver);
     }
@@ -165,11 +174,17 @@ public class LoanService {
     public UserLoanModal rejectLoan(Long loanNumber, String email, String remarks) {
         Loan loan = loanRepository.findByLoanNumber(loanNumber);
 
+        Account account = accountRepository.findByAccountNumber(loan.getAccountNumber()).orElseThrow(() ->
+                new DataValidationException("Account not found"));
+        User user = userRepository.findByEmail(account.getUser().getEmail());
+
         User approver = userRepository.findByEmail(email);
         loan.setApprovedBy(approver);
         loan.setRemarks(remarks);
         loan.setLoanStatus(LoanStatus.REJECTED);
         Loan savedLoan = loanRepository.save(loan);
+
+        emailService.loanRejectionEmail(user,account, savedLoan);
 
         return approveOrRejectLoan(savedLoan, approver);
     }
@@ -198,20 +213,23 @@ public class LoanService {
                     c.getEmiPaidCount()).max().orElse(0);
             if (count >= loan.getLoanTerm()) {
                 loan.setLoanStatus(LoanStatus.CLOSED);
+                loan.setNextEmiDueDate(null);
+            } else {
+
+                EmiPaidCountModel emiPaidCountModel = new EmiPaidCountModel();
+                emiPaidCountModel.setEmiPaidCount(count + 1);
+                emiPaidCountModel.setEmiAmount(emi);
+                emiPaidCountModel.setDateTime(String.valueOf(LocalDateTime.now()));
+                existingEmipaidCountModelList.add(emiPaidCountModel);
+
+                loan.setEmiPaidCount(existingEmipaidCountModelList);
+                loan.setLoanStatus(LoanStatus.ACTIVE);
+                loan.setNextEmiDueDate(loan.getNextEmiDueDate().plusMonths(1));
+
+                loanRepository.save(loan);
+                emailService.loanPaymentEmail(user, account, loan, emi, count + 1);
+                mgs = "EMI paid successfully";
             }
-
-            EmiPaidCountModel emiPaidCountModel = new EmiPaidCountModel();
-            emiPaidCountModel.setEmiPaidCount(count + 1);
-            emiPaidCountModel.setEmiAmount(emi);
-            emiPaidCountModel.setDateTime(String.valueOf(LocalDateTime.now()));
-            existingEmipaidCountModelList.add(emiPaidCountModel);
-
-            loan.setEmiPaidCount(existingEmipaidCountModelList);
-            loan.setLoanStatus(LoanStatus.ACTIVE);
-            loan.setNextEmiDueDate(loan.getNextEmiDueDate().plusMonths(1));
-
-            loanRepository.save(loan);
-            mgs = "EMI paid successfully";
         }
         MessageModel messageModel = new MessageModel();
         messageModel.setMessage(mgs);
