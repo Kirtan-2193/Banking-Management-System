@@ -64,22 +64,7 @@ public class AccountService {
         UserAccountModel userAccountModel = userMapper.userToUserAccountModel(user);
         userAccountModel.setAccountModelList(returnaccountModelList);
 
-        emailService.sendEmail(
-                user.getEmail(),
-                "🎉 Welcome to " + saveAccount.getAccountBranch() + " - Your New Account is Ready!",
-                "Dear " + user.getFirstName() + " " + user.getLastName() + ",\n\n" +
-                        "Congratulations and welcome to the " + saveAccount.getAccountBranch() + " branch of our banking family!\n\n" +
-                        "We’re excited to let you know that your new account has been successfully created. Here are your account details:\n\n" +
-                        "🔹 Account Number: " + saveAccount.getAccountNumber() + "\n" +
-                        "🔹 Current Balance: ₹" + saveAccount.getAccountBalance() + "\n" +
-                        "🔹 Minimum Required Balance: ₹2000.00\n\n" +
-                        "Please make sure to maintain the minimum balance to avoid any penalties.\n\n" +
-                        "If you have any questions or need assistance, feel free to reach out to our support team.\n\n" +
-                        "Thank you for choosing us!\n\n" +
-                        "Warm regards,\n" +
-                        "Customer Service Team\n" +
-                        saveAccount.getAccountBranch() + " Branch"
-        );
+        emailService.createNewAccountEmail(user, saveAccount);
 
         log.info("account created successfully for userId: {}", userId);
         return userAccountModel;

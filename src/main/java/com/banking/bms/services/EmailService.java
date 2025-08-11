@@ -32,6 +32,25 @@ public class EmailService {
     }
 
 
+    public void createNewAccountEmail(User user, Account account) {
+        sendEmail(
+                user.getEmail(),
+                "🎉 Welcome to " + account.getAccountBranch() + " - Your New Account is Ready!",
+                "Dear " + user.getFirstName() + " " + user.getLastName() + ",\n\n" +
+                        "Congratulations and welcome to the " + account.getAccountBranch() + " branch of our banking family!\n\n" +
+                        "We’re excited to let you know that your new account has been successfully created. Here are your account details:\n\n" +
+                        "🔹 Account Number: " + account.getAccountNumber() + "\n" +
+                        "🔹 Current Balance: ₹" + account.getAccountBalance() + "\n" +
+                        "🔹 Minimum Required Balance: ₹2000.00\n\n" +
+                        "Please make sure to maintain the minimum balance to avoid any penalties.\n\n" +
+                        "If you have any questions or need assistance, feel free to reach out to our support team.\n\n" +
+                        "Thank you for choosing us!\n\n" +
+                        "Warm regards,\n" +
+                        "Customer Service Team\n" +
+                        account.getAccountBranch() + " Branch"
+        );
+    }
+
     public void loanApprovalEmail(User user, Account account, Loan loan, double emi) {
         sendEmail(user.getEmail(),
                 "✅ Loan Approved – Disbursal Scheduled",
