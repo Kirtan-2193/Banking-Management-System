@@ -8,6 +8,7 @@ import com.banking.bms.services.LoanService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,31 +29,40 @@ public class LoanController {
     }
 
     @PostMapping("/apply")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).APPLY_LOAN)")
     public ResponseEntity<LoanInfoModel> applyLoan(@Valid @RequestBody LoanInfoModel loanInfoModel,
                                                    @RequestParam Long accountNumber) {
         return ResponseEntity.ok(loanService.applyLoan(loanInfoModel, accountNumber));
     }
 
     @GetMapping("/all-loans")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).VIEW_ALL_LOAN)")
     public ResponseEntity<List<UserLoanModal>> getAllLoans(@RequestParam(required = false) Long loanNumber) {
         return ResponseEntity.ok(loanService.getAllLoans(loanNumber));
     }
 
     @PutMapping("/approve")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).LOAN_APPROVE)")
     public ResponseEntity<UserLoanModal> approveLoan(@RequestParam Long loanNumber,
                                                      @RequestParam String email) {
         return ResponseEntity.ok(loanService.approveLoan(loanNumber, email));
     }
 
     @PutMapping("/reject")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).LOAN_REJECT)")
     public ResponseEntity<UserLoanModal> rejectLoan(@RequestParam Long loanNumber,
                                                     @RequestParam String email,
                                                     @RequestParam String remarks) {
         return ResponseEntity.ok(loanService.rejectLoan(loanNumber, email, remarks));
     }
 
-    @PutMapping("/pay-emi")
+/*    @PutMapping("/pay-emi")
     public ResponseEntity<MessageModel> transferEMIs() {
         return ResponseEntity.ok(loanService.payEMI());
     }
+
+    @PutMapping("/emi-active")
+    public ResponseEntity<MessageModel> activeLoan() {
+        return ResponseEntity.ok(loanService.activateLoan());
+    }*/
 }
