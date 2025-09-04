@@ -7,7 +7,12 @@ import com.banking.bms.model.UserDetailModel;
 import com.banking.bms.model.UserLoanModal;
 import com.banking.bms.model.UserModel;
 import com.banking.bms.model.entities.User;
-import org.mapstruct.*;
+import org.mapstruct.Builder;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValueMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 

@@ -2,7 +2,10 @@ package com.banking.bms.mappers;
 
 import com.banking.bms.model.RoleModel;
 import com.banking.bms.model.entities.Role;
-import org.mapstruct.*;
+import org.mapstruct.Builder;
+import org.mapstruct.Mapper;
+import org.mapstruct.NullValueMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
