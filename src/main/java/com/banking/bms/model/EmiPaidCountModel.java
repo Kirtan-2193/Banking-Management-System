@@ -2,7 +2,6 @@ package com.banking.bms.model;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
 
 @Data
 public class EmiPaidCountModel {
