@@ -43,6 +43,12 @@ public class Account {
     @Column(name = "account_balance")
     private double accountBalance;
 
+    @Column(name = "interest_rate")
+    private double interestRate;
+
+    @Column(name = "transaction_pin", unique = true)
+    private String transactionPin;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "account_status")
     private Status status = Status.ACTIVE;

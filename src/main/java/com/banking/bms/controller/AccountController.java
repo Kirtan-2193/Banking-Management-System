@@ -6,6 +6,7 @@ import com.banking.bms.model.TransferMessageModel;
 import com.banking.bms.model.UserAccountModel;
 import com.banking.bms.model.UserPassbookModel;
 import com.banking.bms.services.AccountService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,7 @@ public class AccountController {
 
     @PostMapping("/add-account")
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).CREATE_ACCOUNT)")
-    public ResponseEntity<UserAccountModel> addAccount(@RequestBody List<AccountModel> accountModel,
+    public ResponseEntity<UserAccountModel> addAccount(@Valid @RequestBody List<AccountModel> accountModel,
                                                        @RequestParam String userId) {
         return ResponseEntity.ok(accountService.insertAccount(accountModel, userId));
     }

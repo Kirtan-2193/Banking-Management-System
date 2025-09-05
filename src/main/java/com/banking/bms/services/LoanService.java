@@ -27,6 +27,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -60,8 +62,11 @@ public class LoanService {
 
     public double calculateEMI(double loanAmount, double loanInterest, int loanTerm) {
         double monthlyInterestRate = loanInterest / (12 * 100);
-        return (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTerm))
+        double emi = (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, loanTerm))
                 / (Math.pow(1 + monthlyInterestRate, loanTerm) - 1);
+        return BigDecimal.valueOf(emi)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     public LoanCalculate calculateLoanEMI(double loanAmount, double interestRate, int termMonths) {

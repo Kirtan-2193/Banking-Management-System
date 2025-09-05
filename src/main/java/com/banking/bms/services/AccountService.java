@@ -21,9 +21,13 @@ import com.banking.bms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +48,8 @@ public class AccountService {
 
     private final PassbookMapper passbookMapper;
 
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
     private final EmailService emailService;
 
 
@@ -53,6 +59,12 @@ public class AccountService {
         double minimumBalance = 2000;
         User user = userRepository.findByUserId(userId).orElseThrow(() ->
                 new DataNotFoundException("User not found with userId: " + userId));
+        List<String> roleNames = user.getUserRoles().stream().map(ur -> ur.getRole().getRoleName()).toList();
+        if (!roleNames.contains("Customer")) {
+            throw new DataValidationException("Account can be created only for Customer");
+        }
+        List<Account> accounts = accountRepository.findAll();
+
         Account saveAccount = null;
         List<Account> saveAccountList = new ArrayList<>();
         for (AccountModel accountModel : accountModelList) {
@@ -60,6 +72,14 @@ public class AccountService {
                 throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
             }
             Account account = accountMapper.accountModelToAccount(accountModel);
+
+            for (Account acc : accounts) {
+                if (encoder.matches(accountModel.getTransactionPin(), acc.getTransactionPin())) {
+                    throw new DataValidationException("Transaction PIN already taken, try with a different PIN");
+                }
+            }
+
+            account.setTransactionPin(encoder.encode(accountModel.getTransactionPin()));
             account.setUser(user);
             saveAccount = accountRepository.save(account);
             saveAccountList.add(saveAccount);
@@ -89,6 +109,25 @@ public class AccountService {
         return userAccountModel;
     }
 
+    @Transactional
+    @Scheduled(cron = "0 30 9 * * ?")
+    public void addInterestRate() {
+        List<Account> accountList = accountRepository.findAll();
+
+        for (Account account : accountList) {
+            if ("SAVING".equalsIgnoreCase(account.getAccountType())) {
+                double interestRate = (account.getAccountBalance() * (account.getInterestRate() / 100)) / 12;
+                interestRate = BigDecimal.valueOf(interestRate)
+                        .setScale(2, RoundingMode.HALF_UP)
+                        .doubleValue();
+
+                account.setAccountBalance(account.getAccountBalance() + interestRate);
+                accountRepository.save(account);
+
+                log.info("Interest added for Account: " + account.getAccountNumber() + " = " + interestRate);
+            }
+        }
+    }
 
 
     public List<UserAccountModel> getAllAccount(Long accountNumber) {
