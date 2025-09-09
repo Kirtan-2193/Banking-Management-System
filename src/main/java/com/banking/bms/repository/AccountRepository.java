@@ -1,9 +1,11 @@
 package com.banking.bms.repository;
 
+import com.banking.bms.enumerations.Status;
 import com.banking.bms.model.entities.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,5 +16,5 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     Optional<Account> findByAccountNumber(Long accountNumber);
 
-    boolean existsByTransactionPin(String transactionPin);
+    List<Account> findByAccountStatusAndNextInterestDate(Status accountStatus, LocalDate nextInterestDate);
 }

@@ -17,6 +17,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 
@@ -51,7 +52,13 @@ public class Account {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "account_status")
-    private Status status = Status.ACTIVE;
+    private Status accountStatus = Status.ACTIVE;
+
+    @Column(name = "account_creation_date")
+    private LocalDate accountCreationDate = LocalDate.now();
+
+    @Column(name = "next_interest_date")
+    private LocalDate nextInterestDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

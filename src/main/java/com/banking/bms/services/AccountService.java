@@ -1,11 +1,13 @@
 package com.banking.bms.services;
 
+import com.banking.bms.enumerations.Status;
 import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.AccountMapper;
 import com.banking.bms.mappers.PassbookMapper;
 import com.banking.bms.mappers.UserMapper;
 import com.banking.bms.model.AccountModel;
+import com.banking.bms.model.MessageModel;
 import com.banking.bms.model.PassbookModel;
 import com.banking.bms.model.TransactionModel;
 import com.banking.bms.model.TransferInfoModel;
@@ -28,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,6 +86,8 @@ public class AccountService {
             account.setTransactionPin(encoder.encode(accountModel.getTransactionPin()));
             account.setUser(user);
             saveAccount = accountRepository.save(account);
+            saveAccount.setNextInterestDate(saveAccount.getAccountCreationDate().plusMonths(1));
+            accountRepository.save(saveAccount);
             saveAccountList.add(saveAccount);
             passbookEntry(saveAccount, user, 0.0, saveAccount.getAccountBalance(), saveAccount.getAccountBalance());
         }
@@ -111,22 +117,27 @@ public class AccountService {
 
     @Transactional
     @Scheduled(cron = "0 30 9 * * ?")
-    public void addInterestRate() {
-        List<Account> accountList = accountRepository.findAll();
+    public MessageModel addInterestRate() {
+        log.info("Scheduled task to add interest rate started at" + LocalDateTime.now());
+        List<Account> accountList = accountRepository.findByAccountStatusAndNextInterestDate(Status.ACTIVE, LocalDate.now());
 
+        MessageModel messageModel = new MessageModel();
         for (Account account : accountList) {
             if ("SAVING".equalsIgnoreCase(account.getAccountType())) {
+                User user = userRepository.findByEmail(account.getUser().getEmail());
                 double interestRate = (account.getAccountBalance() * (account.getInterestRate() / 100)) / 12;
                 interestRate = BigDecimal.valueOf(interestRate)
                         .setScale(2, RoundingMode.HALF_UP)
                         .doubleValue();
 
-                account.setAccountBalance(account.getAccountBalance() + interestRate);
+                credit(account, user, interestRate);
+                account.setNextInterestDate(account.getNextInterestDate().plusMonths(1));
                 accountRepository.save(account);
-
+                messageModel.setMessage("Interest added for Account: " + account.getAccountNumber() + " = " + interestRate);
                 log.info("Interest added for Account: " + account.getAccountNumber() + " = " + interestRate);
             }
         }
+        return messageModel;
     }
 
 

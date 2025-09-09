@@ -1,6 +1,7 @@
 package com.banking.bms.controller;
 
 import com.banking.bms.model.AccountModel;
+import com.banking.bms.model.MessageModel;
 import com.banking.bms.model.TransactionModel;
 import com.banking.bms.model.TransferMessageModel;
 import com.banking.bms.model.UserAccountModel;
@@ -10,7 +11,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -68,4 +75,9 @@ public class AccountController {
                                                                 @RequestParam(required = false, defaultValue = "DESC") String sortDirection) {
         return ResponseEntity.ok(accountService.getPassbook(accountNumber, sortDirection));
     }
+
+    /*@PutMapping("/add-interest")
+    public ResponseEntity<MessageModel> addInterestRate() {
+        return ResponseEntity.ok(accountService.addInterestRate());
+    }*/
 }
