@@ -34,7 +34,7 @@ public class SecurityConfig {
         return http.csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/user/register", "/user/login",
-                                "/loan/pay-emi", "/loan/emi-active").permitAll()
+                                "/loan/pay-emi", "/loan/emi-active", "/account/add-interest").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->

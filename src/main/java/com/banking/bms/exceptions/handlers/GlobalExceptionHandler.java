@@ -5,6 +5,7 @@ import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.exceptions.EncryptDecryptException;
 import com.banking.bms.model.error.ErrorResponse;
 import com.banking.bms.model.error.ErrorType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice(basePackages = "com.banking.bms")
 @ControllerAdvice
 public class GlobalExceptionHandler {
