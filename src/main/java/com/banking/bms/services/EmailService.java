@@ -138,4 +138,19 @@ public class EmailService {
                         "Customer Service Team"
         );
     }
+
+    public void sendOTPEmail(User user, String otp) {
+        sendEmail(user.getEmail(),
+                "🔐 Your One-Time Password (OTP) for Secure Verification",
+                "Dear " + user.getFirstName() + " " + user.getLastName() + ",\n\n" +
+                        "Do not share this OTP with anyone. Your verification code is:\n\n" +
+                        "🔹 OTP: " + otp + "\n\n" +
+                        "⚠️ This OTP is valid for the next 2 minutes. Please do not share it with anyone for your account’s security.\n\n" +
+                        "If you did not initiate this request, please contact our support team immediately.\n\n" +
+                        "Thank you for banking with us!\n\n" +
+                        "Warm regards,\n" +
+                        "Customer Service Team\n" +
+                        "Your Trusted Banking Partner"
+        );
+    }
 }
