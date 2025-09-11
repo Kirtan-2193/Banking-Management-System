@@ -7,6 +7,7 @@ import com.banking.bms.model.TransferMessageModel;
 import com.banking.bms.model.UserAccountModel;
 import com.banking.bms.model.UserPassbookModel;
 import com.banking.bms.services.AccountService;
+import com.banking.bms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -52,8 +53,10 @@ public class AccountController {
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).TRANSFER_TRANSACTION)")
     public ResponseEntity<TransactionModel> onlineTransaction(@RequestParam Long fromAccountNumber,
                                                               @RequestParam Long toAccountNumber,
-                                                              @RequestParam double transferAmount) {
-        return ResponseEntity.ok(accountService.transferMoney(fromAccountNumber, toAccountNumber, transferAmount));
+                                                              @RequestParam double transferAmount,
+                                                              @RequestParam String transactionPin) {
+        String email = SecurityUtils.getCurrentUserEmail();
+        return ResponseEntity.ok(accountService.transferMoney(email, fromAccountNumber, toAccountNumber, transferAmount, transactionPin));
     }
 
     @PostMapping("/deposit")
@@ -66,8 +69,9 @@ public class AccountController {
     @PostMapping("/withdraw")
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).WITHDRAW_TRANSACTION)")
     public ResponseEntity<TransferMessageModel> withdrawMoney(@RequestParam Long accountNumber,
-                                                              @RequestParam double withdrawAmount) {
-        return ResponseEntity.ok(accountService.withdrawMoney(accountNumber, withdrawAmount));
+                                                              @RequestParam double withdrawAmount,
+                                                              @RequestParam String transactionPin) {
+        return ResponseEntity.ok(accountService.withdrawMoney(accountNumber, withdrawAmount, transactionPin));
     }
 
     @GetMapping("/passbook")
