@@ -204,11 +204,20 @@ public class AccountService {
      * @param transferAmount the amount of money to be transferred
      */
     @Transactional
-    public TransactionModel transferMoney(Long fromAccountNumber, Long toAccountNumber, double transferAmount) {
+    public TransactionModel transferMoney(String email, Long fromAccountNumber, Long toAccountNumber, double transferAmount, String transactionPin) {
 
         Account fromAccount = accountRepository.findByAccountNumber(fromAccountNumber).orElseThrow(() ->
                 new DataNotFoundException("Account not found with account number: " + fromAccountNumber));
         User fromUser = userRepository.findByEmail(fromAccount.getUser().getEmail());
+
+//        in this place we can validate to token email and fromAccount email are same or Not ?
+        if (!email.equals(fromUser.getEmail())) {
+            throw new DataValidationException("Please enter your correct Account Number");
+        }
+
+        if (!encoder.matches(transactionPin, fromAccount.getTransactionPin())) {
+            throw new DataValidationException("Invalid transaction PIN, Please enter correct PIN");
+        }
 
         Account toAccount = accountRepository.findByAccountNumber(toAccountNumber).orElseThrow(() ->
                 new DataNotFoundException("Account not found with account number: " + toAccountNumber));
@@ -238,11 +247,15 @@ public class AccountService {
 
 
     @Transactional
-    public TransferMessageModel withdrawMoney(Long accountNumber, double withdrawAmount) {
+    public TransferMessageModel withdrawMoney(Long accountNumber, double withdrawAmount, String transactionPin) {
 
         Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
                 new DataNotFoundException("Account not found with account number: " + accountNumber));
         User user = userRepository.findByEmail(account.getUser().getEmail());
+
+        if (!encoder.matches(transactionPin, account.getTransactionPin())) {
+            throw new DataValidationException("Invalid transaction PIN, Please enter correct PIN");
+        }
 
         debit(account, user, withdrawAmount);
 
