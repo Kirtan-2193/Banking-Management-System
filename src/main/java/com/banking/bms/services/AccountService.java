@@ -56,13 +56,21 @@ public class AccountService {
 
     private final EmailService emailService;
 
+    private final OtpService otpService;
 
 
     @Transactional
-    public UserAccountModel insertAccount(List<AccountModel> accountModelList, String userId) {
+    public UserAccountModel insertAccount(List<AccountModel> accountModelList, String email, String otp) {
         double minimumBalance = 2000;
-        User user = userRepository.findByUserId(userId).orElseThrow(() ->
-                new DataNotFoundException("User not found with userId: " + userId));
+
+        if (!otpService.validateOtp(email, otp)) {
+            throw new DataValidationException("Please enter correct OTP Or OTP was Expired");
+        }
+
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new DataNotFoundException("User not found with email: " + email);
+        }
         List<String> roleNames = user.getUserRoles().stream().map(ur -> ur.getRole().getRoleName()).toList();
         if (!roleNames.contains("Customer")) {
             throw new DataValidationException("Account can be created only for Customer");
@@ -98,7 +106,7 @@ public class AccountService {
 
         emailService.createNewAccountEmail(user, saveAccount);
 
-        log.info("account created successfully for userId: {}", userId);
+        log.info("account created successfully for userId: {}", email);
         return userAccountModel;
     }
 

@@ -31,8 +31,9 @@ public class AccountController {
     @PostMapping("/add-account")
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).CREATE_ACCOUNT)")
     public ResponseEntity<UserAccountModel> addAccount(@Valid @RequestBody List<AccountModel> accountModel,
-                                                       @RequestParam String userId) {
-        return ResponseEntity.ok(accountService.insertAccount(accountModel, userId));
+                                                       @RequestParam String email,
+                                                       @RequestParam String otp) {
+        return ResponseEntity.ok(accountService.insertAccount(accountModel, email, otp));
     }
 
     @GetMapping
