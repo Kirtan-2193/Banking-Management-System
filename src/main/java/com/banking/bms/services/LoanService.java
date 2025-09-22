@@ -2,6 +2,7 @@ package com.banking.bms.services;
 
 import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.enumerations.Status;
+import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.LoanMapper;
 import com.banking.bms.mappers.RoleMapper;
@@ -83,12 +84,29 @@ public class LoanService {
     }
 
 
-    public LoanInfoModel applyLoan(LoanInfoModel loanInfoModel, Long accountNumber) {
+    public LoanInfoModel applyLoan(LoanInfoModel loanInfoModel, Long accountNumber, String email) {
+
+        Account account = null;
+        User user = userRepository.findByEmail(email);
+        List<Account> accountList = accountRepository.findByUserUserId(user.getUserId());
+
+        for (Account ac : accountList) {
+            Long number = ac.getAccountNumber();
+            if (number.equals(accountNumber)) {
+                account = ac;
+                break;
+            }
+        }
+
+        if (account == null) {
+            throw new DataNotFoundException("Account not found with account number: "+accountNumber+" " +
+                    "Please enter valid Account Number");
+        }
 
         double emi = calculateEMI(loanInfoModel.getLoanAmount(), loanInfoModel.getInterestRate(), loanInfoModel.getLoanTerm());
 
         Loan loan = loanMapper.loanInfoModelToLoan(loanInfoModel);
-        loan.setAccountNumber(accountNumber);
+        loan.setAccountNumber(account.getAccountNumber());
         loan.setEndDate(loanInfoModel.getStartDate().plusMonths(loanInfoModel.getLoanTerm()));
         loan = loanRepository.save(loan);
 

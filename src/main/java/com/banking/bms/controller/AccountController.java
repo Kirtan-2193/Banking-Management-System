@@ -78,7 +78,9 @@ public class AccountController {
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).VIEW_TRANSACTION)")
     public ResponseEntity<UserPassbookModel> getPassbookEntries(@RequestParam Long accountNumber,
                                                                 @RequestParam(required = false, defaultValue = "DESC") String sortDirection) {
-        return ResponseEntity.ok(accountService.getPassbook(accountNumber, sortDirection));
+        String email = SecurityUtils.getCurrentUserEmail();
+
+        return ResponseEntity.ok(accountService.getPassbook(accountNumber, sortDirection, email));
     }
 
     /*@PutMapping("/add-interest")

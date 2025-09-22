@@ -286,13 +286,27 @@ public class AccountService {
     }
 
 
-    public UserPassbookModel getPassbook(Long accountNumber, String direction) {
+    public UserPassbookModel getPassbook(Long accountNumber, String direction, String email) {
 
         Sort sortDirection = Sort.by(Sort.Direction.fromString(direction), "dateTime");
 
-        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() ->
-                new DataNotFoundException("Account not found with account number: " + accountNumber));
-        User user = userRepository.findByEmail(account.getUser().getEmail());
+        Account account = null;
+        User user = userRepository.findByEmail(email);
+        List<Account> accountList = accountRepository.findByUserUserId(user.getUserId());
+
+        for (Account ac : accountList) {
+            Long number = ac.getAccountNumber();
+            if (number.equals(accountNumber)) {
+                account = ac;
+                break;
+            }
+        }
+
+        if (account == null) {
+            throw new DataNotFoundException("Account not found with account number: "+accountNumber+" " +
+                    "Please enter valid Account Number");
+        }
+
         List<Passbook> passbookList = passbookRepository.findByAccountAccountId(account.getAccountId(), sortDirection);
 
         List<PassbookModel> passbookModelList = passbookMapper.passbookListToPassbookModelList(passbookList);
