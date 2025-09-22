@@ -5,6 +5,7 @@ import com.banking.bms.model.LoanInfoModel;
 import com.banking.bms.model.MessageModel;
 import com.banking.bms.model.UserLoanModal;
 import com.banking.bms.services.LoanService;
+import com.banking.bms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,9 @@ public class LoanController {
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).APPLY_LOAN)")
     public ResponseEntity<LoanInfoModel> applyLoan(@Valid @RequestBody LoanInfoModel loanInfoModel,
                                                    @RequestParam Long accountNumber) {
-        return ResponseEntity.ok(loanService.applyLoan(loanInfoModel, accountNumber));
+        String email = SecurityUtils.getCurrentUserEmail();
+
+        return ResponseEntity.ok(loanService.applyLoan(loanInfoModel, accountNumber, email));
     }
 
     @GetMapping("/all-loans")
@@ -43,16 +46,18 @@ public class LoanController {
 
     @PutMapping("/approve")
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).LOAN_APPROVE)")
-    public ResponseEntity<UserLoanModal> approveLoan(@RequestParam Long loanNumber,
-                                                     @RequestParam String email) {
+    public ResponseEntity<UserLoanModal> approveLoan(@RequestParam Long loanNumber) {
+        String email = SecurityUtils.getCurrentUserEmail();
+
         return ResponseEntity.ok(loanService.approveLoan(loanNumber, email));
     }
 
     @PutMapping("/reject")
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).LOAN_REJECT)")
     public ResponseEntity<UserLoanModal> rejectLoan(@RequestParam Long loanNumber,
-                                                    @RequestParam String email,
                                                     @RequestParam String remarks) {
+        String email = SecurityUtils.getCurrentUserEmail();
+
         return ResponseEntity.ok(loanService.rejectLoan(loanNumber, email, remarks));
     }
 

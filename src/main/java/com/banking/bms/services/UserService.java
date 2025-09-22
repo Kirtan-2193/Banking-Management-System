@@ -5,11 +5,14 @@ import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
 import com.banking.bms.mappers.RoleMapper;
 import com.banking.bms.mappers.UserMapper;
+import com.banking.bms.model.MessageModel;
 import com.banking.bms.model.RoleModel;
 import com.banking.bms.model.UserModel;
+import com.banking.bms.model.entities.Account;
 import com.banking.bms.model.entities.Role;
 import com.banking.bms.model.entities.User;
 import com.banking.bms.model.entities.UserRole;
+import com.banking.bms.repository.AccountRepository;
 import com.banking.bms.repository.RoleRepository;
 import com.banking.bms.repository.UserRepository;
 import com.banking.bms.repository.UserRoleRepository;
@@ -33,13 +36,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final UserMapper userMapper;
+    private final AccountRepository accountRepository;
 
     private final RoleRepository roleRepository;
 
     private final UserRoleRepository userRoleRepository;
 
     private final RoleMapper roleMapper;
+
+    private final UserMapper userMapper;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -217,6 +222,29 @@ public class UserService {
         return userModelToReturn;
     }
 
+
+    public MessageModel deleteUser(String userId) {
+        User user = userRepository.findByUserId(userId).orElseThrow(
+                () -> new DataNotFoundException("User not found on :- " + userId));
+
+        List<UserRole> userRoleList = userRoleRepository.findByUserUserId(userId);
+
+        List<Account> accountList = accountRepository.findByUserUserId(userId);
+
+        user.setStatus(Status.INACTIVE);
+        userRoleList.forEach(ur -> ur.setStatus(Status.INACTIVE));
+        if (!accountList.isEmpty()) {
+            accountList.forEach(a -> a.setAccountStatus(Status.INACTIVE));
+            accountRepository.saveAll(accountList);
+        }
+        userRepository.save(user);
+        userRoleRepository.saveAll(userRoleList);
+
+        MessageModel messageModel = new MessageModel();
+        messageModel.setMessage("User Deleted Successfully");
+
+        return messageModel;
+    }
 
 
     /**

@@ -1,5 +1,6 @@
 package com.banking.bms.controller;
 
+import com.banking.bms.model.MessageModel;
 import com.banking.bms.model.UserModel;
 import com.banking.bms.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +45,11 @@ public class UserController {
     @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).UPDATE_USER)")
     public ResponseEntity<UserModel> editUser(@RequestBody UserModel userModel, @RequestParam String userId) {
         return ResponseEntity.ok(userService.updateUser(userModel, userId));
+    }
+
+    @PutMapping("/delete-user")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).DELETE_USER)")
+    public ResponseEntity<MessageModel> deleteUser(@RequestParam String userId) {
+        return ResponseEntity.ok(userService.deleteUser(userId));
     }
 }
