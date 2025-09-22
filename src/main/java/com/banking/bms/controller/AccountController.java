@@ -83,6 +83,12 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getPassbook(accountNumber, sortDirection, email));
     }
 
+    @PutMapping("/delete-account")
+    @PreAuthorize("@authService.hassPermission(T(com.banking.bms.enumerations.PermissionEnum).DELETE_ACCOUNT)")
+    public ResponseEntity<MessageModel> deleteAccount(@RequestParam Long accountNumber) {
+        return ResponseEntity.ok(accountService.deleteAccount(accountNumber));
+    }
+
     /*@PutMapping("/add-interest")
     public ResponseEntity<MessageModel> addInterestRate() {
         return ResponseEntity.ok(accountService.addInterestRate());

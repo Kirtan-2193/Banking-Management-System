@@ -1,5 +1,6 @@
 package com.banking.bms.services;
 
+import com.banking.bms.enumerations.LoanStatus;
 import com.banking.bms.enumerations.Status;
 import com.banking.bms.exceptions.DataNotFoundException;
 import com.banking.bms.exceptions.DataValidationException;
@@ -15,9 +16,11 @@ import com.banking.bms.model.TransferMessageModel;
 import com.banking.bms.model.UserAccountModel;
 import com.banking.bms.model.UserPassbookModel;
 import com.banking.bms.model.entities.Account;
+import com.banking.bms.model.entities.Loan;
 import com.banking.bms.model.entities.Passbook;
 import com.banking.bms.model.entities.User;
 import com.banking.bms.repository.AccountRepository;
+import com.banking.bms.repository.LoanRepository;
 import com.banking.bms.repository.PassbookRepository;
 import com.banking.bms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +54,8 @@ public class AccountService {
     private final PassbookRepository passbookRepository;
 
     private final PassbookMapper passbookMapper;
+
+    private final LoanRepository loanRepository;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -145,6 +150,29 @@ public class AccountService {
                 log.info("Interest added for Account: " + account.getAccountNumber() + " = " + interestRate);
             }
         }
+        return messageModel;
+    }
+
+
+    @Transactional
+    public MessageModel deleteAccount(Long accountNumber) {
+
+        Account account = accountRepository.findByAccountNumber(accountNumber).orElseThrow( () ->
+                new DataNotFoundException("Account not found with account number: " + accountNumber));
+
+        List<Loan> loan = loanRepository.findByAccountNumberAndLoanStatusNot(accountNumber, LoanStatus.CLOSED);
+
+        MessageModel messageModel = new MessageModel();
+
+        if (!loan.isEmpty()) {
+            messageModel.setMessage("Account has active loan, cannot be deleted");
+        } else {
+            account.setAccountStatus(Status.INACTIVE);
+            accountRepository.save(account);
+
+            messageModel.setMessage("Account deleted successfully");
+        }
+
         return messageModel;
     }
 

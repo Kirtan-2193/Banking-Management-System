@@ -61,8 +61,10 @@ public class Loan {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @Column(name = "account_number")
     private Long accountNumber;
 
+    @Column(name = "next_emi_due_date")
     private LocalDate nextEmiDueDate;
 
     @ManyToOne

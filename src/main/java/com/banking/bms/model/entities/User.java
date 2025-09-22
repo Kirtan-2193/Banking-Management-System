@@ -1,8 +1,11 @@
 package com.banking.bms.model.entities;
 
+import com.banking.bms.enumerations.Status;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -41,6 +44,10 @@ public class User {
 
     @Column(name = "gender")
     private String gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Status status = Status.ACTIVE;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
