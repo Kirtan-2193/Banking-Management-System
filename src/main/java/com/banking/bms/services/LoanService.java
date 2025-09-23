@@ -103,6 +103,10 @@ public class LoanService {
                     "Please enter valid Account Number");
         }
 
+        if (account.getAccountStatus() != Status.ACTIVE) {
+            throw new DataValidationException("Account is not active. Please contact your bank.");
+        }
+
         double emi = calculateEMI(loanInfoModel.getLoanAmount(), loanInfoModel.getInterestRate(), loanInfoModel.getLoanTerm());
 
         Loan loan = loanMapper.loanInfoModelToLoan(loanInfoModel);
@@ -251,6 +255,7 @@ public class LoanService {
                 loanRepository.save(loan);
                 emailService.loanPaymentEmail(user, account, loan, emi, count + 1);
                 mgs = "EMI paid successfully";
+                log.info("EMI paid successfully for loan number: "+loan.getLoanNumber());
             }
         }
         MessageModel messageModel = new MessageModel();
