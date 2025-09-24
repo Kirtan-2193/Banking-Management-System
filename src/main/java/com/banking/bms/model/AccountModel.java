@@ -1,6 +1,8 @@
 package com.banking.bms.model;
 
+import com.banking.bms.config.MaskedNumberSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
@@ -11,6 +13,7 @@ public class AccountModel {
     private String accountId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonSerialize(using = MaskedNumberSerializer.class)
     private String accountNumber;
 
     private String accountType;
@@ -22,6 +25,7 @@ public class AccountModel {
     private double accountBalance;
 
     @Pattern(regexp = "^(\\d{4}|\\d{6})$", message = "Transaction PIN must be 4 or 6 digits numeric")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String transactionPin;
 
 }
