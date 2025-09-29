@@ -13,6 +13,7 @@ import com.banking.bms.model.entities.Role;
 import com.banking.bms.model.entities.User;
 import com.banking.bms.model.entities.UserRole;
 import com.banking.bms.repository.AccountRepository;
+import com.banking.bms.repository.LoanRepository;
 import com.banking.bms.repository.RoleRepository;
 import com.banking.bms.repository.UserRepository;
 import com.banking.bms.repository.UserRoleRepository;
@@ -41,6 +42,8 @@ public class UserService {
     private final RoleRepository roleRepository;
 
     private final UserRoleRepository userRoleRepository;
+
+    private final LoanRepository loanRepository;
 
     private final RoleMapper roleMapper;
 
@@ -228,20 +231,19 @@ public class UserService {
                 () -> new DataNotFoundException("User not found on :- " + userId));
 
         List<UserRole> userRoleList = userRoleRepository.findByUserUserId(userId);
-
-        List<Account> accountList = accountRepository.findByUserUserId(userId);
-
-        user.setStatus(Status.INACTIVE);
-        userRoleList.forEach(ur -> ur.setStatus(Status.INACTIVE));
-        if (!accountList.isEmpty()) {
-            accountList.forEach(a -> a.setAccountStatus(Status.INACTIVE));
-            accountRepository.saveAll(accountList);
-        }
-        userRepository.save(user);
-        userRoleRepository.saveAll(userRoleList);
+        List<Account> accountList = accountRepository.findByUserUserIdAndAccountStatusNot(userId, Status.INACTIVE);
 
         MessageModel messageModel = new MessageModel();
-        messageModel.setMessage("User Deleted Successfully");
+
+        if (!accountList.isEmpty()) {
+            messageModel.setMessage("This user has active account, cannot be deleted. Please close the account first.");
+        } else {
+            user.setStatus(Status.INACTIVE);
+            userRoleList.forEach(ur -> ur.setStatus(Status.INACTIVE));
+            userRepository.save(user);
+            userRoleRepository.saveAll(userRoleList);
+            messageModel.setMessage("User deleted successfully");
+        }
 
         return messageModel;
     }
