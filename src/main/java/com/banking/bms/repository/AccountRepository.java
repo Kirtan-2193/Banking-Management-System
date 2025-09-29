@@ -17,4 +17,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     Optional<Account> findByAccountNumber(Long accountNumber);
 
     List<Account> findByAccountStatusAndNextInterestDate(Status accountStatus, LocalDate nextInterestDate);
+
+    List<Account> findByUserUserIdAndAccountStatusNot(String userId, Status accountStatus);
 }
