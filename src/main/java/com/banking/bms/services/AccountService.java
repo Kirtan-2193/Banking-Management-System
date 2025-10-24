@@ -261,7 +261,7 @@ public class AccountService {
         toTransferInfoModel.setFirstName(toUser.getFirstName());
         toTransferInfoModel.setEmail(toUser.getEmail());
 
-        debit(fromAccount, fromUser, transferAmount);
+        boolean flag = debit(fromAccount, fromUser, transferAmount);
         credit(toAccount, toUser, transferAmount);
 
         TransactionModel transactionModel = new TransactionModel();
@@ -285,7 +285,7 @@ public class AccountService {
             throw new DataValidationException("Invalid transaction PIN, Please enter correct PIN");
         }
 
-        debit(account, user, withdrawAmount);
+        boolean flag = debit(account, user, withdrawAmount);
 
         TransferMessageModel transferMessageModel = new TransferMessageModel();
         transferMessageModel.setAmount(withdrawAmount);
@@ -368,7 +368,7 @@ public class AccountService {
      * @param user the user who owns the account
      * @param debitAmount the amount to be deducted from the account
      */
-    public void debit (Account account, User user, double debitAmount) {
+    public boolean debit (Account account, User user, double debitAmount) {
 
         double minimumBalance = 2000;
 
@@ -386,6 +386,7 @@ public class AccountService {
                 passbookEntry(account, user, debitAmount, 0.0, totalBalance);
 
                 emailService.debitEmail(user, debitAmount, totalBalance);
+                return true;
 
             } else {
                 throw new DataValidationException("Minimum Balance Should be: " + minimumBalance);
