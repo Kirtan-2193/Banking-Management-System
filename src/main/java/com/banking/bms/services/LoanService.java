@@ -231,7 +231,7 @@ public class LoanService {
 
             double emi = calculateEMI(loan.getLoanAmount(), loan.getInterestRate(), loan.getLoanTerm());
 
-            accountService.debit(account, user, emi);
+            boolean flag = accountService.debit(account, user, emi);
 
             List<EmiPaidCountModel> existingEmipaidCountModelList = loan.getEmiPaidCount();
 

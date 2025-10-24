@@ -35,7 +35,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/user/register", "/user/login",
                                 "/loan/pay-emi", "/loan/emi-active", "/account/add-interest",
-                                "/otp/generate","/otp/verify").permitAll()
+                                "/otp/generate","/otp/verify",
+                                "/payments/**").permitAll()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->
