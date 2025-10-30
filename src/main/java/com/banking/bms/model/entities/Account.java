@@ -67,6 +67,9 @@ public class Account {
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<Passbook> passbook;
 
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
+    private List<Payment> payments;
+
 
 
     @PrePersist

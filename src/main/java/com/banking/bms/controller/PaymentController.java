@@ -17,9 +17,14 @@ public class PaymentController {
     private final PaymentService paymentService;
 
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<PaymentResponseModel> onlinePayment(@RequestParam Long accountNumber,
                                                               @RequestParam double amount) {
         return ResponseEntity.ok(paymentService.makeOnlinePayment(accountNumber, amount));
+    }
+
+    @PostMapping("/refund")
+    public ResponseEntity<PaymentResponseModel> refundPayment(@RequestParam String paymentId) {
+        return ResponseEntity.ok(paymentService.refundPayment(paymentId));
     }
 }
