@@ -412,15 +412,15 @@ public class AccountService {
      * @param user the user who owns the account
      * @param creditAmount the amount to be added to the account balance
      */
-    public void credit (Account account, User user, double creditAmount) {
-
+    public boolean credit (Account account, User user, double creditAmount) {
         account.setAccountBalance(account.getAccountBalance() + creditAmount);
         accountRepository.save(account);
         double totalBalance = account.getAccountBalance();
 
         passbookEntry(account, user, 0.0, creditAmount, totalBalance);
-
         emailService.creditEmail(user, creditAmount, totalBalance);
+
+        return true;
     }
 
 
