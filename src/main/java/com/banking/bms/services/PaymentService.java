@@ -52,16 +52,19 @@ public class PaymentService {
 
     public PaymentResponseModel refundPayment(String paymentId) {
         Payment payment = paymentRepository.findByPaymentId(paymentId);
+        if (payment.getPaymentStatus().equals(PaymentStatus.REFUNDED)) {
+            return paymentMapper.paymentToPaymentResponseModel(paymentRepository.save(payment));
+        } else {
+            Account account = accountRepository.findByAccountNumber(payment.getAccount().getAccountNumber()).orElseThrow(
+                    () -> new DataNotFoundException("Account not found"));
+            User user = account.getUser();
 
-        Account account = accountRepository.findByAccountNumber(payment.getAccount().getAccountNumber()).orElseThrow(
-                () -> new DataNotFoundException("Account not found"));
-        User user = account.getUser();
+            boolean flag = accountService.credit(account, user, payment.getAmount());
 
-        boolean flag = accountService.credit(account, user, payment.getAmount());
+            payment.setPaymentStatus(flag ? PaymentStatus.REFUNDED : PaymentStatus.PENDING);
+            payment.setUpdateAt(LocalDateTime.now());
 
-        payment.setPaymentStatus(flag ? PaymentStatus.REFUNDED : PaymentStatus.PENDING);
-        payment.setUpdateAt(LocalDateTime.now());
-
-        return paymentMapper.paymentToPaymentResponseModel(paymentRepository.save(payment));
+            return paymentMapper.paymentToPaymentResponseModel(paymentRepository.save(payment));
+        }
     }
 }
