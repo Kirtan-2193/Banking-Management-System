@@ -2,9 +2,17 @@ package com.banking.bms.mappers;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import com.banking.bms.model.UserAccountModel;
+import com.banking.bms.model.UserDetailModel;
+import com.banking.bms.model.UserLoanModal;
 import com.banking.bms.model.UserModel;
 import com.banking.bms.model.entities.User;
-import org.mapstruct.*;
+import org.mapstruct.Builder;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValueMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
@@ -22,4 +30,12 @@ public interface UserMapper {
 
     List<UserModel> userListToUserModelList(List<User> users);
 
+    void updateUserFromUserModel(UserModel userModel, @MappingTarget User user);
+
+    UserAccountModel userToUserAccountModel(User user);
+
+    @Mapping(target = "approvedBy", ignore = true)
+    UserLoanModal userToUserLoanModal(User user);
+
+    UserDetailModel userToUserDetailModel(User user);
 }

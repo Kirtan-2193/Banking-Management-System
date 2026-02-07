@@ -1,7 +1,16 @@
 package com.banking.bms.model.entities;
 
 import com.banking.bms.enumerations.Status;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -26,4 +35,7 @@ public class Role {
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
+
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
+    private List<RolePermission> rolePermission;
 }
